@@ -1,0 +1,2 @@
+Cas9-4	Indices/CRKO_4sg_26b
+shRNA	Indices/allhumanshRNA
