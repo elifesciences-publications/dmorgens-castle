@@ -1,0 +1,11 @@
+makeCounts.py version	0.3
+Data/Time	09:10:40:17
+Sequencing files	Sequencing/Test/DM-T14-B-1007_S6_L00
+Additional Files	
+Output File	Data/Test/T14_shRNA_repB
+Screen Type	shRNA
+Mismatches allowed	0
+Length of alignment	22
+Reads input	103285246
+Barcodes counted	89909928
+Ambiguous counts	1606196
