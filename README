@@ -1,9 +1,3 @@
-###############################################################################
-
-Analyzing screen data using casTLE.
-David Morgens
-11/01/15
-
 Copyright (c) 2015, David W Morgens
 All rights reserved.
 
@@ -25,6 +19,11 @@ OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
 STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF 
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+###############################################################################
+
+Analyzing screen data using casTLE.
+David Morgens
+11/01/15
 
 ###############################################################################
 
