@@ -1,4 +1,4 @@
-Copyright (c) 2015, David W Morgens
+Copyright (c) 2016, David W Morgens
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted 
@@ -23,7 +23,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Analyzing screen data using casTLE.
 David Morgens
-11/01/15
+03/18/2016
+Version 1.0
 
 ###############################################################################
 
@@ -52,6 +53,16 @@ python Scripts/addPermutations.py <results file> <number of permutations>
 python Scripts/analyzeCombo.py <results file 1> <results file 2> <output file>
 
 python Scripts/addCombo.py <combo file> <number of permutations>
+
+python Scripts/plotDist.py <output name> <count file 1> <count file 2> ...
+
+python Scripts/plotVolcano.py <results file>
+
+python Scripts/plotGenes.py <resutls file> <gene name 1> <gene name 2> ...
+
+python Scripts/plotElements.py <results file 1> <results file 2> <output name>
+
+python Scripts/plotRep.py <results file 1> <results file 2> <output name>
 
 
 ###############################################################################

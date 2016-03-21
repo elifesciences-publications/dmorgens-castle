@@ -22,7 +22,7 @@ import time
 ###############################################################################    
 # Version number
 
-current_version = '0.3'
+current_version = '0.4'
 
 
 ###############################################################################
@@ -62,11 +62,10 @@ parser.add_argument('-m', '--mismatch', dest='mismatch',
 
 parser.add_argument('-l', '--length', dest='read_length',
                     help='Select the length of read for trimming', type=int,
-                    default=22)
+                    default=17)
 
-parser.add_argument('-f', '--five',
-                    help='Trim number of bases off five prime end', type=int,
-                    default=0)
+parser.add_argument('-fi', '--filter',
+                    help='Filter reads which are too short', action='store_true')
 
 parser.add_argument('-b', '--bowtie',
                     help='Location of Bowtie aligner', type=str,
@@ -75,14 +74,8 @@ parser.add_argument('-b', '--bowtie',
 parser.add_argument('-a', '--add_file',
 		    help='Location of additional FASTQ files')
 
-parser.add_argument('-c', '--clean', action='store_false',
-		    help='Don\'t clean up auxilary files')
-
 parser.add_argument('-s', '--strand', default='-', type=str, choices=['-','+'],
 		    help='Which strand to align to')
-
-parser.add_argument('-v', '--verbose', help='Increase output verbosity',
-                    action='store_true')
 
 # Saves input to args object
 args = parser.parse_args()
@@ -134,13 +127,13 @@ if args.add_file:
                                 + '*' + ' > ' + file_out + '_all.fastq.gz',
                                 shell=True)
     except:
-        sys.exit()
+        sys.exit('Shell error')
 else:
     try:
 	subprocess.check_call('cat ' + args.file_in + '*'+' > '
                                 + file_out + '_all.fastq.gz', shell=True)
     except:
-        sys.exit()
+        sys.exit('Shell error')
 
 
 # Calls the unix shell to unzip newly aggregated read file
@@ -149,7 +142,7 @@ print('Unzipping reads')
 try:
     subprocess.check_call('gunzip ' + file_out + '_all.fastq.gz', shell=True)
 except:
-    sys.exit()
+    sys.exit('Shell error')
 
 
 ###############################################################################
@@ -168,10 +161,10 @@ with open(file_out + '_trimmed.fastq', 'w') as align_file:
 
     for read in HTSeq.FastqReader(file_out + '_all.fastq'):
         total_reads += 1
-        trimmed_read = read[args.five: args.read_length]
+        trimmed_read = read[: args.read_length]
 
         # Gives a warning if read shorter than trimmed length
-        if len(trimmed_read) != args.read_length - args.five:
+        if len(trimmed_read) != args.read_length:
             short += 1
 
             if warn:
@@ -179,11 +172,10 @@ with open(file_out + '_trimmed.fastq', 'w') as align_file:
                             + 'Read length: ' + str(len(trimmed_read)))
                 warn = False
 
-        trimmed_read.write_to_fastq_file(align_file)
+            if args.filter:
+                continue
 
-        # Optional output
-        if args.verbose and (total_reads % 5000000 == 0):
-           print(str(total_reads) + ' reads trimmed')
+        trimmed_read.write_to_fastq_file(align_file)
 
 if not warn:
     print(str(short) + ' reads too short.\n'
@@ -251,10 +243,6 @@ with open(mapFile, 'r') as map_open:
 
             last_read = read
 
-            # Optional Output
-            if args.verbose and (total_counts % 5000000 == 0):
-                print(str(total_counts) + ' barcodes counted')
-
             # Warning for extreme multimapping reads
             if ambig > 100 and warn:
                 print('Warning: Possible alignment to constant region')
@@ -276,8 +264,8 @@ with open(file_out + '_counts.csv', 'w') as out_open:
 # Stores record file for downstream analysis
 with open(file_out + '_record.txt', 'w') as rec_open:
     rec_csv = csv.writer(rec_open, delimiter='\t')
-    rec_csv.writerow(['makeCounts.py version', current_version])
-    rec_csv.writerow(['Data/Time', time.strftime("%d:%H:%M:%S")])
+    rec_csv.writerow(['makeCounts.py', current_version])
+    rec_csv.writerow(['Date', time.strftime("%d:%m:%Y")])
     rec_csv.writerow(['Sequencing files', args.file_in])
     rec_csv.writerow(['Additional Files', args.add_file])
     rec_csv.writerow(['Output File', file_out])
@@ -289,10 +277,10 @@ with open(file_out + '_record.txt', 'w') as rec_open:
     rec_csv.writerow(['Ambiguous counts', ambig_counts])
 
 # Stores record file for permanent record
-with open(os.path.join('Records', 'makeCounts' + time.strftime("%d%H%M%S")), 'w') as back_open:
+with open(os.path.join('Records', 'makeCounts' + time.strftime("%Y%m%d%H%M%eS")), 'w') as back_open:
     rec_csv = csv.writer(back_open, delimiter='\t')
-    rec_csv.writerow(['makeCounts.py version', current_version])
-    rec_csv.writerow(['Data/Time', time.strftime("%d:%H:%M:%S")])
+    rec_csv.writerow(['makeCounts.py', current_version])
+    rec_csv.writerow(['Date', time.strftime("%d:%m:%Y")])
     rec_csv.writerow(['Sequencing files', args.file_in])
     rec_csv.writerow(['Additional Files', args.add_file])
     rec_csv.writerow(['Output File', file_out])
@@ -307,30 +295,27 @@ with open(os.path.join('Records', 'makeCounts' + time.strftime("%d%H%M%S")), 'w'
 ###############################################################################
 # Compresses and/or erases files using linux shell commands
 
-if args.clean:
-    print('Deleting gathered reads')
-    try:
-        subprocess.check_call('rm ' + file_out + '_all.fastq', shell=True)
-    except:
-        sys.exit()
+print('Deleting gathered reads')
+try:
+    subprocess.check_call('rm ' + file_out + '_all.fastq', shell=True)
+except:
+    sys.exit('Shell error')
+try:
+    subprocess.check_call('rm ' + file_out + '_trimmed.fastq', shell=True)
+except:
+    sys.exit('Shell error')
 
-    print('Compressing mapped reads')
-    try:
-        subprocess.check_call('gzip ' + file_out + '.map', shell=True)
-    except:
-        sys.exit()
+print('Compressing mapped reads')
+try:
+    subprocess.check_call('gzip ' + file_out + '.map', shell=True)
+except:
+    sys.exit('Shell error')
 
-    print('Compressing unmapped reads')
-    try:
-        subprocess.check_call('gzip ' + file_out + '.unmapped', shell=True)
-    except:
-        sys.exit()
-
-    print('Compressing trimmed reads')
-    try:
-        subprocess.check_call('gzip ' + file_out + '_trimmed.fastq', shell=True)
-    except:
-        sys.exit()
+print('Compressing unmapped reads')
+try:
+    subprocess.check_call('gzip ' + file_out + '.unmapped', shell=True)
+except:
+    sys.exit('Shell error')
 
 print('Finished')
 

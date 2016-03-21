@@ -1,4 +1,7 @@
 ###############################################################################
+# David Morgens
+# 03/18/2016
+###############################################################################
 
 from __future__ import division
 import csv
@@ -11,7 +14,7 @@ import sys
 ###############################################################################    
 # Version number
 
-current_version = '0.7'
+current_version = '1.0'
 
 
 ###############################################################################    
@@ -34,11 +37,10 @@ parser.add_argument('-p', '--proccessors', dest='nums',
 parser.add_argument('-e', '--erase', action='store_true',
 		help='Don\t keep previous permutations')
 
-parser.add_argument('-t', '--out_time', action='store_true',
-		help='Output timestamps')
-
 parser.add_argument('-r', '--ratio_col', default=13, type=int,
                         help='Column containing ratio scores')
+
+parser.add_argument('-m', '--mouse', action='store_true')
 
 # Saves all input to object args
 args = parser.parse_args()
@@ -49,7 +51,6 @@ args = parser.parse_args()
 
 print('Retrieving records')
 
-# Finds record file
 name = args.res_file[: -4]
 rec_file = name + '_record.txt'
 
@@ -57,43 +58,38 @@ try:
     # Parses record file
     with open(rec_file, 'r') as rec_open:
         rec_csv = csv.reader(rec_open, delimiter='\t')
-        version = rec_csv.next()[1]
+        script, version = rec_csv.next()
 
         if version != current_version:
-            sys.exit('Version number not current\n'
+            sys.exit('Error: Version number not current\n'
                         + 'Rerun analysis')
 
-        last_time = rec_csv.next()[1]
+        if script != 'analyzeCombo.py':
+            sys.exit('Error: File is not a combo file')
+
+        prev_time = rec_csv.next()[1]
         res_file1 = rec_csv.next()[1]
         res_file2 = rec_csv.next()[1]
-        unt_file1 = rec_csv.next()[1]
-        unt_file2 = rec_csv.next()[1]
-        trt_file1 = rec_csv.next()[1]
-        trt_file2 = rec_csv.next()[1]
         file_out = rec_csv.next()[1]
-        thresh1 = int(rec_csv.next()[1])
-        thresh2 = int(rec_csv.next()[1])
-        screen_type1 = rec_csv.next()[1]
-        screen_type2 = rec_csv.next()[1]
-        K1 = float(rec_csv.next()[1])
-        K2 = float(rec_csv.next()[1])
-        neg_name1 = rec_csv.next()[1]
-        neg_name2 = rec_csv.next()[1]
-        split_mark1 = rec_csv.next()[1]
-        split_mark2 = rec_csv.next()[1]
-        zero_files1 = rec_csv.next()[1]
-        zero_files2 = rec_csv.next()[1]
-        off_rate1 = float(rec_csv.next()[1])
-        off_rate2 = float(rec_csv.next()[1])
-        like_fun1 = eval(rec_csv.next()[1])
-        like_fun2 = eval(rec_csv.next()[1])
-        draw_num1 = int(rec_csv.next()[1])
-        draw_num2 = int(rec_csv.next()[1])
         I_step = float(rec_csv.next()[1])
+        scale = int(rec_csv.next()[1])
 
 except IOError:
     sys.exit('Record of result file not found\n'
                 + 'Change file name or rerun analysis')
+
+stats1, files1, info1, param1 = retrieveRecord(res_file1, current_version)
+stats2, files2, info2, param2 = retrieveRecord(res_file2, current_version)
+
+script1, version1, last_time1 = stats1
+unt_file1, trt_file1, zero_files1, file_out1 = files1
+screen_type1, neg_name1, split_mark1, exclude1 = info1
+thresh1, K1, back1, I_step1, scale1, draw_num1 = param1
+
+script2, version2, last_time2 = stats2
+unt_file2, trt_file2, zero_files2, file_out2 = files2
+screen_type2, neg_name2, split_mark2, exclude2 = info2
+thresh2, K2, back2, I_step2, scale2, draw_num2 = param2
 
 
 ###############################################################################
@@ -102,7 +98,7 @@ except IOError:
 print('Retrieving gene information')
 
 # Retrieves gene info
-geneID2Name, geneID2Info, geneName2ID, geneEns2Name = retrieveInfo()
+geneID2Name, geneID2Info, geneName2ID, geneEns2Name = retrieveInfo(mouse=args.mouse)
 
 # Retrieves GO information
 geneID2Comp, geneID2Proc, geneID2Fun = retrieveGO()
@@ -115,10 +111,12 @@ print('Filtering reads')
 
 # Retreives filtered counts for auxilary function
 untreated1, treated1, stats1, time_zero1 = filterCounts(unt_file1,
-                                                trt_file1, thresh1, zero_files1)
+                                                trt_file1, thresh1, zero_files1,
+                                                exclude1)
 
 untreated2, treated2, stats2, time_zero2 = filterCounts(unt_file2,
-                                                trt_file2, thresh2, zero_files2)
+                                                trt_file2, thresh2, zero_files2,
+                                                exclude2)
 
 
 ###############################################################################
@@ -127,46 +125,57 @@ untreated2, treated2, stats2, time_zero2 = filterCounts(unt_file2,
 print('Calculating enrichment values')
 
 element_rhos1, gene_rhos1, neg_rhos1, tar_rhos1, gene_ref1 = enrich_all(untreated1,
-                                treated1, neg_name1, split_mark1, K1, time_zero1)
+                                treated1, neg_name1, split_mark1, K1, time_zero1, back1)
 
 element_rhos2, gene_rhos2, neg_rhos2, tar_rhos2, gene_ref2 = enrich_all(untreated2,
-                                treated2, neg_name2, split_mark2, K2, time_zero2)
+                                treated2, neg_name2, split_mark2, K2, time_zero2, back2)
+
+
+###############################################################################
+#
+
+# Selects background
+if back1 == 'all':
+    back_rhos1 = neg_rhos1 + tar_rhos1
+
+elif back1 == 'neg':
+    back_rhos1 = neg_rhos1
+
+elif back1 == 'tar':
+    back_rhos1 = tar_rhos1
+
+else:
+    sys.exit('Error: Unrecognized background option: ' + back1)
+
+if back2 == 'all':
+    back_rhos2 = neg_rhos2 + tar_rhos2
+
+elif back2 == 'neg':
+    back_rhos2 = neg_rhos2
+
+elif back2 == 'tar':
+    back_rhos2 = tar_rhos2
+
+else:
+    sys.exit('Error: Unrecognized background option: ' + back2)
 
 
 ###############################################################################
 # Calculates null distribution of ratio statistic
 
-print('Running permutations')
+permI, permL, permInterval = comboPerm(draw_num1, draw_num2, args.perm_num,
+                                        back_rhos1, back_rhos2,
+                                        tar_rhos1, tar_rhos2,
+                                        args.nums, I_step, scale)
 
-gene2line = {}
-gene2rat = {}
 
-# Reads in previously calculated ratios
-with open(args.res_file, 'r') as res_open:
+###############################################################################
+# Access previously calculate ratios and permutations
 
-    res_csv = csv.reader(res_open, delimiter=',', lineterminator='\n')
-    header = res_csv.next()
+print('Calculating p-values')
 
-    for line in res_csv:
-        gene2line[line[0]] = line
-        gene2rat[line[0]] = float(line[args.ratio_col])
-
-ref_file = name + '_ref.csv'
-
-if args.out_time:
-    print time.strftime("%d:%H:%M:%S")
-
-# Retrieves pvalues from auxilary function
-geneP, all_perm_num = comboPerm(draw_num1, draw_num2, args.perm_num,
-                                neg_rhos1, neg_rhos2,
-                                tar_rhos1, tar_rhos2,
-                                off_rate1, off_rate2,
-                                like_fun1, like_fun2,
-                                args.nums, ref_file,
-                                gene2rat, I_step, args.erase)
-
-if args.out_time:
-    print time.strftime("%d:%H:%M:%S")
+gene2line, geneP, header, all_perm_num = calculatePval(args.res_file, permI, permL,
+                                        args.erase, args.ratio_col)
 
 print('Permutations used: ' + all_perm_num)
 
@@ -176,8 +185,8 @@ print('Permutations used: ' + all_perm_num)
 
 print('Outputing file')
 
-with open(args.res_file,'w') as out_open:
-    out_csv = csv.writer(out_open, delimiter=',', lineterminator = '\n')
+with open(args.res_file, 'w') as out_open:
+    out_csv = csv.writer(out_open, delimiter=',', lineterminator='\n')
 
     # Writes a header
     out_csv.writerow(header)
@@ -196,8 +205,8 @@ with open(args.res_file,'w') as out_open:
 
 with open(rec_file, 'a') as rec_open:
     rec_csv = csv.writer(rec_open, delimiter='\t')
-    rec_csv.writerow(['addCombo.py version', '0.7'])
-    rec_csv.writerow(['Data/Time', time.strftime("%d:%H:%M:%S")])
+    rec_csv.writerow(['addCombo.py', '0.8'])
+    rec_csv.writerow(['Date', time.strftime("%d:%m:%Y")])
     rec_csv.writerow(['Number of permutations', all_perm_num])
 
 

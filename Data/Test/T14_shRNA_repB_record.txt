@@ -1,5 +1,5 @@
-makeCounts.py version	0.3
-Data/Time	09:10:40:17
+makeCounts.py	0.4
+Date	18:03:2016
 Sequencing files	Sequencing/Test/DM-T14-B-1007_S6_L00
 Additional Files	
 Output File	Data/Test/T14_shRNA_repB

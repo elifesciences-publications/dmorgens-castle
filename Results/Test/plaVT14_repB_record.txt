@@ -1,19 +1,19 @@
-analyzeCounts.py version	0.7
-Data/Time	09:15:30: 9S
+analyzeCounts.py	1.0
+Date	18:03:2016
 Untreated count file	Data/Test/plasmid_shRNA_counts.csv
 Treated count file	Data/Test/T14_shRNA_repB_counts.csv
+Time zero files	
 Output file	Results/Test/plaVT14_repB
-Count threshold	10
 Screen Type	shRNA
-Selection strength	1.0
 Negative symbol	0
 Split mark	_
-Time zero files	
-Off-target rate	0.0
-Likelihood function	likeEB
-I step	0.025
-Draw number	25
+Excluded strings	
+Count threshold	10
+Selection strength	1.0
 Background	neg
+Effect step	0.1
+Scale	3
+Draw number	25
 Number of processers	20
 Total untreated counts	64692229
 Total treated counts	89994240

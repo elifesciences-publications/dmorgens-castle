@@ -1,0 +1,11 @@
+makeCounts.py	0.4
+Date	18:03:2016
+Sequencing files	Sequencing/Test/shRNAidx10_S9_L00
+Additional Files	
+Output File	Data/Test/plasmid_shRNA
+Screen Type	shRNA
+Mismatches allowed	0
+Length of alignment	22
+Reads input	79307525
+Barcodes counted	64687389
+Ambiguous counts	1331508

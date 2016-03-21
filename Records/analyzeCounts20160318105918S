@@ -1,0 +1,23 @@
+analyzeCounts.py version	1.0
+Date	18:03:2016
+Untreated count file	Data/Test/plasmid_shRNA_counts.csv
+Treated count file	Data/Test/T14_shRNA_repB_counts.csv
+Time zero files	
+Output file	Results/Test/plaVT14_repB
+Screen Type	shRNA
+Negative symbol	0
+Split mark	_
+Excluded strings	
+Count threshold	10
+Selection strength	1.0
+Background	neg
+Effect step	0.1
+Scale	3
+Draw number	25
+Number of processers	20
+Total untreated counts	64692229
+Total treated counts	89994240
+Missing/low untreated elements	15187
+Missing/low treated elements	26013
+Elements removed	9204
+Number of distinct elements	501650

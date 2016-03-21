@@ -1,0 +1,8 @@
+analyzeCombo.py	1.0
+Date	18:03:2016
+Result file 1	Results/Test/plaVT14_repA.csv
+Result file 2	Results/Test/plaVT14_repB.csv
+Output file	Results/Test/plaVT14_combo
+I step	0.1
+Scale	3
+Number of processers	20

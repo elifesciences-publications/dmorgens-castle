@@ -1,5 +1,5 @@
-makeCounts.py version	0.3
-Data/Time	08:14:29:25
+makeCounts.py	0.4
+Date	18:03:2016
 Sequencing files	Sequencing/Test/shRNAidx10_S9_L00
 Additional Files	
 Output File	Data/Test/plasmid_shRNA

@@ -1,4 +1,8 @@
 ###############################################################################
+# David Morgens
+# 03/18/2016
+###############################################################################
+#
 
 from __future__ import division
 import csv
@@ -12,7 +16,7 @@ import numpy as np
 ###############################################################################    
 # Version number
 
-current_version = '0.7'
+current_version = '1.0'
 
 
 ###############################################################################    
@@ -20,7 +24,7 @@ current_version = '0.7'
 # Parses input using argparse module
 
 # Initiates input parser
-parser = argparse.ArgumentParser(description='Combines data')
+parser = argparse.ArgumentParser(description='Combines data for two screens')
 
 # Non-optional arguments:
 parser.add_argument('res_file1', help='Result file one', type=str)
@@ -41,18 +45,14 @@ parser.add_argument('-r', '--reference',
 parser.add_argument('-of', '--override_file', action='store_true',
                 help='Override Result file output location')
 
+parser.add_argument('-m', '--mouse', action='store_true')
+
 # Saves all input to object args
 args = parser.parse_args()
 
 
 ###############################################################################
 # Processes and checks input arguments
-
-# Checks if parallel requested
-if args.nums == 1:
-    single = True
-else:
-    single = False
 
 # Determines output file
 if args.override_file:
@@ -74,59 +74,21 @@ except:
 
 print('Retrieving records')
 
-name1 = args.res_file1[: -4]
-rec_file1 = name1 + '_record.txt'
+stats1, files1, info1, param1 = retrieveRecord(args.res_file1, current_version)
+stats2, files2, info2, param2 = retrieveRecord(args.res_file2, current_version)
 
-name2 = args.res_file2[: -4]
-rec_file2 = name2 + '_record.txt'
+script1, version1, last_time1 = stats1
+unt_file1, trt_file1, zero_files1, file_out1 = files1
+screen_type1, neg_name1, split_mark1, exclude1 = info1
+thresh1, K1, back1, I_step1, scale1, draw_num1 = param1
 
-try:
-    # Parses record file 1
-    with open(rec_file1, 'r') as rec_open:
-        rec_csv = csv.reader(rec_open, delimiter='\t')
-        version1 = rec_csv.next()[1]
-        last_time1 = rec_csv.next()[1]
-        unt_file1 = rec_csv.next()[1]
-        trt_file1 = rec_csv.next()[1]
-        file_out1 = rec_csv.next()[1]
-        thresh1 = int(rec_csv.next()[1])
-        screen_type1 = rec_csv.next()[1]
-        K1 = float(rec_csv.next()[1])
-        neg_name1 = rec_csv.next()[1]
-        split_mark1 = rec_csv.next()[1]
-        zero_files1 = rec_csv.next()[1]
-        off_rate1 = float(rec_csv.next()[1])
-        like_fun1 = eval(rec_csv.next()[1])
-        I_step1 =  float(rec_csv.next()[1])
-
-    # Parses record file 2
-    with open(rec_file2, 'r') as rec_open:
-        rec_csv = csv.reader(rec_open, delimiter='\t')
-        version2 = rec_csv.next()[1]
-        last_time2 = rec_csv.next()[1]
-        unt_file2 = rec_csv.next()[1]
-        trt_file2 = rec_csv.next()[1]
-        file_out2 = rec_csv.next()[1]
-        thresh2 = int(rec_csv.next()[1])
-        screen_type2 = rec_csv.next()[1]
-        K2 = float(rec_csv.next()[1])
-        neg_name2 = rec_csv.next()[1]
-        split_mark2 = rec_csv.next()[1]
-        zero_files2 = rec_csv.next()[1]
-        off_rate2 = float(rec_csv.next()[1])
-        like_fun2 = eval(rec_csv.next()[1])
-        I_step2 =  float(rec_csv.next()[1])
-
-except IOError:
-    sys.exit('Record of result file not found\n'
-                + 'Change file name or rerun analysis')
+script2, version2, last_time2 = stats2
+unt_file2, trt_file2, zero_files2, file_out2 = files2
+screen_type2, neg_name2, split_mark2, exclude2 = info2
+thresh2, K2, back2, I_step2, scale2, draw_num2 = param2
 
 if version1 != version2:
-    sys.exit('Versions not consistent\n'
-                + 'Rerun analysis')
-
-if version1 != current_version:
-    sys.exit('Version number not current\n'
+    sys.exit('Error: Versions not consistent\n'
                 + 'Rerun analysis')
 
 
@@ -136,7 +98,7 @@ if version1 != current_version:
 print('Retrieving gene information')
 
 # Retrieves gene info
-geneID2Name, geneID2Info, geneName2ID, geneEns2Name = retrieveInfo()
+geneID2Name, geneID2Info, geneName2ID, geneEns2Name = retrieveInfo(mouse=args.mouse)
 
 # Retrieves GO information
 geneID2Comp, geneID2Proc, geneID2Fun = retrieveGO()
@@ -150,11 +112,11 @@ print('Filtering reads')
 # Retreives filtered counts for auxilary function
 untreated1, treated1, stats1, time_zero1 = filterCounts(unt_file1,
                                                 trt_file1, thresh1,
-                                                zero_files1)
+                                                zero_files1, exclude1)
 
 untreated2, treated2, stats2, time_zero2 = filterCounts(unt_file2,
                                                 trt_file2, thresh2,
-                                                zero_files2)
+                                                zero_files2, exclude2)
 
 
 ###############################################################################
@@ -164,10 +126,39 @@ print('Calculating enrichment values')
 
 # Retrieves enrichment values from auxilary function
 element_rhos1, gene_rhos1, neg_rhos1, tar_rhos1, gene_ref1 = enrich_all(untreated1,
-		treated1, neg_name1, split_mark1, K1, time_zero1)
+		treated1, neg_name1, split_mark1, K1, time_zero1, back1)
 
 element_rhos2, gene_rhos2, neg_rhos2, tar_rhos2, gene_ref2 = enrich_all(untreated2,
-		treated2, neg_name2, split_mark2, K2, time_zero2)
+		treated2, neg_name2, split_mark2, K2, time_zero2, back2)
+
+
+###############################################################################
+#
+
+# Selects background
+if back1 == 'all':
+    back_rhos1 = neg_rhos1 + tar_rhos1
+
+elif back1 == 'neg':
+    back_rhos1 = neg_rhos1
+
+elif back1 == 'tar':
+    back_rhos1 = tar_rhos1
+
+else:
+    sys.exit('Error: Unrecognized background option: ' + back1)
+
+if back2 == 'all':
+    back_rhos2 = neg_rhos2 + tar_rhos2
+
+elif back2 == 'neg':
+    back_rhos2 = neg_rhos2
+
+elif back2 == 'tar':
+    back_rhos2 = tar_rhos2
+
+else:
+    sys.exit('Error: Unrecognized background option: ' + back2)
 
 
 ###############################################################################
@@ -176,9 +167,10 @@ element_rhos2, gene_rhos2, neg_rhos2, tar_rhos2, gene_ref2 = enrich_all(untreate
 print('Determining search grid')
 
 I_step = min([I_step1, I_step2])
+scale = max([scale1, scale2])
 
 # Auxiliary function determines single grid and unifies gene IDs
-add_gene_rhos1, add_gene_rhos2, gene_span = comboSpan(gene_rhos1, gene_rhos2)
+add_gene_rhos1, add_gene_rhos2, gene_span = comboSpan(gene_rhos1, gene_rhos2, 2)
 
 
 ###############################################################################
@@ -186,13 +178,13 @@ add_gene_rhos1, add_gene_rhos2, gene_span = comboSpan(gene_rhos1, gene_rhos2)
 
 print('Calculating first likelihoods')
 
-data1 = retrieveLikelihoods(add_gene_rhos1, neg_rhos1, tar_rhos1, off_rate1,
-                                like_fun1, args.nums, gene_span, I_step)
+data1 = retrieveLikelihoods(add_gene_rhos1, back_rhos1, args.nums,
+                                gene_span, scale, I_step)
 
 print('Calculating second likelihoods')
 
-data2 = retrieveLikelihoods(add_gene_rhos2, neg_rhos2, tar_rhos2, off_rate2,
-                                like_fun2, args.nums, gene_span, I_step)
+data2 = retrieveLikelihoods(add_gene_rhos2, back_rhos2, args.nums,
+                                gene_span, scale, I_step)
 
 print('Combining likelihoods')
 
@@ -209,56 +201,41 @@ with open(file_out + '.csv','w') as out_open:
 
     # Writes a header
     out_csv.writerow(['#GeneID','Symbol','GeneInfo','Localization','Process',
-                        'Function','# elements 1','Effect 1','L stat 1',
-                        '# elements 2','Effect 2','L stat 2',
-                        'Combo effect', 'Combo L', 'L p-value',
-			'Min I', 'Max I', 'Elements'])
+                        'Function','# elements 1','casTLE Effect 1','casTLE Score 1',
+                        '# elements 2','casTLE Effect 2','casTLE Score 2',
+                        'Combo casTLE Effect', 'Combo casTLE Score', 'casTLE p-value',
+			'Minimum Effect Estimate', 'Maximum Effect Estimate'])
 
     for gene in gene_span:
 
         # Finds appropriate IDs
-	if gene in geneID2Name:
-	    geneID = gene
-	    name = geneID2Name[geneID]
-
-	elif gene in geneName2ID:
-	    name = gene
-	    geneID = geneName2ID[gene]
-
-        elif gene in geneEns2Name:
-            name = geneEns2Name[gene]
-            geneID = geneName2ID[name]
-
-	else:
-	    geneID = gene
-	    name = gene
+        geneID, name, entrez = retrieveIDs(gene, geneID2Name, geneName2ID, geneEns2Name)
 
         # Retrieves information about gene
-        name = geneID2Name[geneID]
-        info = geneID2Info[geneID]
-        comp = geneID2Comp[geneID]
-        proc = geneID2Proc[geneID]
-        fun = geneID2Fun[geneID]
+        info = geneID2Info[entrez]
+        comp = geneID2Comp[entrez]
+        proc = geneID2Proc[entrez]
+        fun = geneID2Fun[entrez]
 
         # Retrieves analysis of gene; rounding where appropriate
         num1 = len(add_gene_rhos1[gene])
         num2 = len(add_gene_rhos2[gene])
 
         # Retreives likelihood states
-        effect1 = sigDig(data1[0][gene])
-        effect2 = sigDig(data2[0][gene])
+        effect1 = sigDig(data1[0][gene] / (10 ** scale))
+        effect2 = sigDig(data2[0][gene]  / (10 ** scale))
         rat1 = sigDig(data1[1][gene])
         rat2 = sigDig(data2[1][gene])
 
         # Retrieves combo scores
-        effect = sigDig(geneI[gene])
+        effect = sigDig(geneI[gene]  / (10 ** scale))
         rat = sigDig(geneL[gene])
         pRat = 'N/A'
-        min_CI = geneInterval[gene][0]
-        max_CI = geneInterval[gene][1]
+        min_CI = sigDig(geneInterval[gene][0] / (10 ** scale))
+        max_CI = sigDig(geneInterval[gene][1] / (10 ** scale))
 
         # Writes to file
-        out_csv.writerow([gene, name, info, comp, proc, fun,
+        out_csv.writerow([geneID, name, info, comp, proc, fun,
                                 num1, effect1, rat1,
                                 num2, effect2, rat2,
                                 effect, rat, pRat, min_CI, max_CI])
@@ -270,67 +247,25 @@ with open(file_out + '.csv','w') as out_open:
 # Saves record for downstream analysis
 with open(file_out + '_record.txt', 'w') as rec_open:
     rec_csv = csv.writer(rec_open, delimiter='\t')
-    rec_csv.writerow(['analyzeCombo.py version', current_version])
-    rec_csv.writerow(['Data/Time', time.strftime("%d:%H:%M:%eS")])
+    rec_csv.writerow(['analyzeCombo.py', current_version])
+    rec_csv.writerow(['Date', time.strftime("%d:%m:%Y")])
     rec_csv.writerow(['Result file 1', args.res_file1])
     rec_csv.writerow(['Result file 2', args.res_file2])
-    rec_csv.writerow(['Untreated file 1', unt_file1])
-    rec_csv.writerow(['Untreated file 2', unt_file2])
-    rec_csv.writerow(['Treated file 1', trt_file1])
-    rec_csv.writerow(['Treated file 2', trt_file2])
     rec_csv.writerow(['Output file', file_out])
-    rec_csv.writerow(['Threshold 1', thresh1])
-    rec_csv.writerow(['Threshold 2', thresh2])
-    rec_csv.writerow(['Screen Type 1', screen_type1])
-    rec_csv.writerow(['Screen Type 2', screen_type2])
-    rec_csv.writerow(['Normalization 1', K1])
-    rec_csv.writerow(['Normalization 2', K2])
-    rec_csv.writerow(['Negative name 1', neg_name1])
-    rec_csv.writerow(['Negative name 2', neg_name2])
-    rec_csv.writerow(['Split mark 1', split_mark1])
-    rec_csv.writerow(['Split mark 2', split_mark2])
-    rec_csv.writerow(['Time zero files 1', zero_files1])
-    rec_csv.writerow(['Time zero files 2', zero_files2])
-    rec_csv.writerow(['Off-target rate 1', off_rate1])
-    rec_csv.writerow(['Off-target rate 2', off_rate2])
-    rec_csv.writerow(['Likelihood function 1', like_fun1.__name__])
-    rec_csv.writerow(['Likelihood function 2', like_fun2.__name__])
-    rec_csv.writerow(['Draw Number 1', int(np.median(map(len, add_gene_rhos1.values())))])
-    rec_csv.writerow(['Draw Number 2', int(np.median(map(len, add_gene_rhos2.values())))])
     rec_csv.writerow(['I step', I_step])
+    rec_csv.writerow(['Scale', scale])
     rec_csv.writerow(['Number of processers', args.nums])
     
 # Saves permanent record
-with open(os.path.join('Records', 'analyzeCombo' + time.strftime("%d%H%M%S")), 'w') as back_open:
+with open(os.path.join('Records', 'analyzeCombo' + time.strftime("%Y%m%d%H%M%eS")), 'w') as back_open:
     rec_csv = csv.writer(back_open, delimiter='\t')
-    rec_csv.writerow(['analyzeCombo.py version', current_version])
-    rec_csv.writerow(['Data/Time', time.strftime("%d:%H:%M:%eS")])
+    rec_csv.writerow(['analyzeCombo.py', current_version])
+    rec_csv.writerow(['Date', time.strftime("%d:%m:%Y")])
     rec_csv.writerow(['Result file 1', args.res_file1])
     rec_csv.writerow(['Result file 2', args.res_file2])
-    rec_csv.writerow(['Untreated file 1', unt_file1])
-    rec_csv.writerow(['Untreated file 2', unt_file2])
-    rec_csv.writerow(['Treated file 1', trt_file1])
-    rec_csv.writerow(['Treated file 2', trt_file2])
     rec_csv.writerow(['Output file', file_out])
-    rec_csv.writerow(['Threshold 1', thresh1])
-    rec_csv.writerow(['Threshold 2', thresh2])
-    rec_csv.writerow(['Screen Type 1', screen_type1])
-    rec_csv.writerow(['Screen Type 2', screen_type2])
-    rec_csv.writerow(['Normalization 1', K1])
-    rec_csv.writerow(['Normalization 2', K2])
-    rec_csv.writerow(['Negative name 1', neg_name1])
-    rec_csv.writerow(['Negative name 2', neg_name2])
-    rec_csv.writerow(['Split mark 1', split_mark1])
-    rec_csv.writerow(['Split mark 2', split_mark2])
-    rec_csv.writerow(['Time zero files 1', zero_files1])
-    rec_csv.writerow(['Time zero files 2', zero_files2])
-    rec_csv.writerow(['Off-target rate 1', off_rate1])
-    rec_csv.writerow(['Off-target rate 2', off_rate2])
-    rec_csv.writerow(['Likelihood function 1', like_fun1.__name__])
-    rec_csv.writerow(['Likelihood function 2', like_fun2.__name__])
-    rec_csv.writerow(['Draw Number 1', int(np.median(map(len, add_gene_rhos1.values())))])
-    rec_csv.writerow(['Draw Number 2', int(np.median(map(len, add_gene_rhos2.values())))])
     rec_csv.writerow(['I step', I_step])
+    rec_csv.writerow(['Scale', scale])
     rec_csv.writerow(['Number of processers', args.nums])
 
 

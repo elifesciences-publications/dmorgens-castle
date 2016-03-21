@@ -1,4 +1,7 @@
 ###############################################################################
+# David Morgens
+# 03/18/2016
+###############################################################################
 
 from __future__ import division
 import csv
@@ -11,7 +14,7 @@ import sys
 ###############################################################################    
 # Version number
 
-current_version = '0.7'
+current_version = '1.0'
 
 
 ###############################################################################    
@@ -37,16 +40,13 @@ parser.add_argument('-e', '--erase', action='store_true',
 parser.add_argument('-t', '--out_time', action='store_true',
 		help='Output timestamps')
 
-parser.add_argument('-r', '--ratio_col', default=10, type=int,
+parser.add_argument('-r', '--ratio_col', default=8, type=int,
                         help='Column containing ratio scores')
+
+parser.add_argument('-m', '--mouse', action='store_true')
 
 # Saves all input to object args
 args = parser.parse_args()
-
-if args.nums == 1:
-    single = True
-else:
-    single = False
 
 
 ###############################################################################
@@ -54,38 +54,11 @@ else:
 
 print('Retrieving records')
 
-name = args.res_file[: -4]
-rec_file = name + '_record.txt'
+stats, files, info, param = retrieveRecord(args.res_file, current_version)
 
-try:
-    # Parses record file
-    with open(rec_file, 'r') as rec_open:
-        rec_csv = csv.reader(rec_open, delimiter='\t')
-        version = rec_csv.next()[1]
-
-        if version != current_version:
-            sys.exit('Version number not current\n'
-                        + 'Rerun analysis')
-
-        last_time = rec_csv.next()[1]
-        unt_file = rec_csv.next()[1]
-        trt_file = rec_csv.next()[1]
-        file_out = rec_csv.next()[1]
-        thresh = int(rec_csv.next()[1])
-        screen_type = rec_csv.next()[1]
-        K = float(rec_csv.next()[1])
-        neg_name = rec_csv.next()[1]
-        split_mark = rec_csv.next()[1]
-        zero_files = rec_csv.next()[1]
-        off_rate = float(rec_csv.next()[1])
-        like_fun = eval(rec_csv.next()[1])
-        I_step = float(rec_csv.next()[1])
-        draw_num = int(rec_csv.next()[1])
-        back = rec_csv.next()[1]
-
-except IOError:
-    sys.exit('Record of result file not found\n'
-                + 'Change file name or rerun analysis')
+unt_file, trt_file, zero_files, file_out = files
+screen_type, neg_name, split_mark, exclude = info
+thresh, K, back, I_step, scale, draw_num = param
 
 print('Drawing ' + str(draw_num) + ' random elements')
 
@@ -96,7 +69,7 @@ print('Drawing ' + str(draw_num) + ' random elements')
 print('Retrieving gene information')
 
 # Uses different genetic information depending whether a human or mouse screen
-geneID2Name, geneID2Info, geneName2ID, geneEns2Name = retrieveInfo()
+geneID2Name, geneID2Info, geneName2ID, geneEns2Name = retrieveInfo(mouse=args.mouse)
 
 # Retrieves GO information
 geneID2Comp, geneID2Proc, geneID2Fun = retrieveGO()
@@ -109,7 +82,8 @@ print('Filtering reads')
 
 # Retreives filtered counts for auxilary function
 untreated, treated, stats, time_zero = filterCounts(unt_file,
-                                                trt_file, thresh, zero_files)
+                                                trt_file, thresh,
+                                                zero_files, exclude)
 
 
 ###############################################################################
@@ -117,8 +91,8 @@ untreated, treated, stats, time_zero = filterCounts(unt_file,
 
 print('Calculating enrichment values')
 
-shRNA_rhos, gene_rhos, neg_rhos, tar_rhos, gene_ref = enrich_all(untreated,
-                                treated, neg_name, split_mark, K, time_zero)
+element_rhos, gene_rhos, neg_rhos, tar_rhos, gene_ref = enrich_all(untreated,
+		treated, neg_name, split_mark, K, time_zero, back)
 
 # Chooses appropriate background from record file
 if back == 'all':
@@ -136,28 +110,22 @@ else:
 
 print('Running permutations')
 
-gene2line = {}
-gene2rat = {}
-
-# Reads in previously calculated ratios
-with open(args.res_file, 'r') as res_open:
-    res_csv = csv.reader(res_open, delimiter=',', lineterminator = '\n')
-    header = res_csv.next()
-    for line in res_csv:
-        gene2line[line[1]] = line
-        gene2rat[line[1]] = float(line[args.ratio_col])
-
-ref_file = name + '_ref.csv'
-
 if args.out_time:
     print time.strftime("%d:%H:%M:%S")
 
 # Retrieves pvalues from auxilary function
-geneP, all_perm_num = retrievePerm(draw_num, args.perm_num, back_rhos, tar_rhos,
-                off_rate, like_fun, args.nums, ref_file, gene2rat, I_step, args.erase)
+permI, permL, permInterval = retrievePerm(draw_num, args.perm_num, back_rhos,
+                                                tar_rhos, args.nums, scale, I_step)
 
 if args.out_time:
     print time.strftime("%d:%H:%M:%S")
+
+
+###############################################################################
+# Access previously calculate ratios and permutations
+
+gene2line, geneP, header, all_perm_num = calculatePval(args.res_file, permI, permL,
+                                        args.erase, args.ratio_col)
 
 print('Permutations used: ' + all_perm_num)
 
@@ -167,8 +135,8 @@ print('Permutations used: ' + all_perm_num)
 
 print('Outputing file')
 
-with open(args.res_file,'w') as out_open:
-    out_csv = csv.writer(out_open, delimiter=',', lineterminator = '\n')
+with open(args.res_file, 'w') as out_open:
+    out_csv = csv.writer(out_open, delimiter=',', lineterminator='\n')
 
     # Writes a header
     out_csv.writerow(header)
@@ -180,16 +148,6 @@ with open(args.res_file,'w') as out_open:
 
         # Writes to file
         out_csv.writerow(line)
-
-
-###############################################################################
-# Appends note to existing record
-
-with open(rec_file, 'a') as rec_open:
-    rec_csv = csv.writer(rec_open, delimiter='\t')
-    rec_csv.writerow(['addPermutations.py version', '0.7'])
-    rec_csv.writerow(['Data/Time', time.strftime("%d:%H:%M:%S")])
-    rec_csv.writerow(['Number of permutations', all_perm_num])
 
 
 ###############################################################################
