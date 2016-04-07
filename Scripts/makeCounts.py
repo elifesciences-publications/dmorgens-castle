@@ -1,6 +1,6 @@
 ###############################################################################
 # David Morgens
-# 11/01/15
+# 04/06/2016
 ###############################################################################
 # Import neccessary modules
 
@@ -257,7 +257,7 @@ print(str(ambig_counts) + ' ambiguous counts')
 
 # Writes output as tab deliminated file
 with open(file_out + '_counts.csv', 'w') as out_open:
-    out_csv = csv.writer(out_open, delimiter='\t')
+    out_csv = csv.writer(out_open, delimiter=',')
     for name in sorted(counts):
         out_csv.writerow([name, counts[name]])
 

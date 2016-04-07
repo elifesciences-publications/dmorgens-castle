@@ -1,6 +1,6 @@
 ###############################################################################
 # David Morgens
-# 03/18/2016
+# 04/06/2016
 ###############################################################################
 #
 
@@ -35,15 +35,15 @@ parser.add_argument('name', help='Name for output files', type=str)
 
 # Optional arguments:
 parser.add_argument('-p', '--processors', dest='nums',
-                help='Number of processors to use', type=int,
+                help='Number of processors to use; default is 20', type=int,
                 default=20)
 
 parser.add_argument('-r', '--reference',
-                help='Location of reference files', type=str,
+                help='Location of reference files. Default is GenRef', type=str,
                 default='GenRef')
 
 parser.add_argument('-of', '--override_file', action='store_true',
-                help='Override Result file output location')
+                help='Override Result file output location.')
 
 parser.add_argument('-m', '--mouse', action='store_true')
 

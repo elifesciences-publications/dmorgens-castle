@@ -1,6 +1,6 @@
 ###############################################################################
 # David Morgens
-# 03/18/2016
+# 04/06/2016
 ###############################################################################
 
 from __future__ import division
@@ -22,25 +22,26 @@ current_version = '1.0'
 # Parses input using argparse module
 
 # Initiates input parser
-parser = argparse.ArgumentParser(description='Adds permutations for pvalues')
+parser = argparse.ArgumentParser(description='Adds permutations to calculate pvalues')
 
 # Non-optional arguments: The results file and the number of permutations
-parser.add_argument('res_file', help='Results file', type=str)
+parser.add_argument('res_file', help='Results file location', type=str)
 
 parser.add_argument('perm_num', help='Number of permutations', type=int)
 
 # Optional arguments
 parser.add_argument('-p', '--proccessors', dest='nums',
-                help='Number of processors to use', type=int,
+                help='Number of processors to use. Default is 20.', type=int,
                 default=20)
 
 parser.add_argument('-e', '--erase', action='store_true',
-		help='Don\t keep previous permutations')
+		help='Don\t keep previous permutations.')
 
 parser.add_argument('-r', '--ratio_col', default=13, type=int,
-                        help='Column containing ratio scores')
+                        help='Column containing ratio scores. Default is 13.')
 
-parser.add_argument('-m', '--mouse', action='store_true')
+parser.add_argument('-m', '--mouse', action='store_true',
+                        help='Flag for mouse screen')
 
 # Saves all input to object args
 args = parser.parse_args()

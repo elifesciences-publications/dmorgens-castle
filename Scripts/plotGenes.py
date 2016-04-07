@@ -1,6 +1,6 @@
 ###############################################################################
 # David Morgens
-# 03/18/2016
+# 04/06/2016
 ###############################################################################
 # Imports neccessary modules
 
@@ -35,27 +35,39 @@ parser.add_argument('res_file', help='Result file', type=str)
 parser.add_argument('gene_list', help='List of genes', type=str, nargs='+')
 
 # Optional arguments to change images
-parser.add_argument('-t', '--thresh', help='Change threshold',
-                        type=int)
+parser.add_argument('-c', '--cloud', action='store_false',
+                        help='Don\'t generate cloud plot')
 
-parser.add_argument('-of', '--override_file', type=str)
-
-parser.add_argument('-f', '--file_type', default='png')
-
-parser.add_argument('-m', '--mouse', action='store_true')
-
-parser.add_argument('-e', '--effect_col', help='Column containing estimate',
-                        type=int, default=7)
-
-parser.add_argument('-y', '--ylim', type=float)
-
-parser.add_argument('-x', '--xlim', type=float)
-
-parser.add_argument('-c', '--cloud', action='store_false')
-parser.add_argument('-hi', '--hist', action='store_false')
+parser.add_argument('-hi', '--hist', action='store_false',
+                        help='Don\'t generate histogram plot')
 
 parser.add_argument('-sl', '--legend', help='Include legend',
                         action='store_true')
+
+# Optional arguments for output
+parser.add_argument('-of', '--override_file', type=str,
+                        help='Override automatic targeting to Results folder')
+
+parser.add_argument('-f', '--file_type', default='png',
+                        help='File ending/type. Default is "png"')
+
+parser.add_argument('-m', '--mouse', action='store_true',
+                        help='Uses mouse gene information.')
+
+# Optional arguments for axes
+parser.add_argument('-y', '--ylim', type=float,
+                        help='y axis maximum.')
+
+parser.add_argument('-x', '--xlim', type=float,
+                        help='x axis range.')
+
+# Optional arguments for analysis
+
+parser.add_argument('-e', '--effect_col', type=int, default=7,
+                        help='Manual selection of effect size column')
+
+parser.add_argument('-t', '--thresh', type=int,
+                        help='Override threshold for counts')
 
 # Saves all input to object args
 args = parser.parse_args()

@@ -1,6 +1,6 @@
 ###############################################################################
 # David Morgens
-# 03/18/2016
+# 04/06/2016
 ###############################################################################
 # Imports neccessary modules
 
@@ -200,7 +200,9 @@ def timeZero(zero_files, thresh):
     # Reads and filters in time zero untreated file
     with open(zero_unt_file, 'r') as zero_unt_open:
 
-        zero_unt_csv = csv.reader(zero_unt_open, delimiter='\t')
+        dialect = csv.Sniffer().sniff(zero_unt_open.read(1024), delimiters='\t ,')
+        zero_unt_csv = csv.reader(zero_unt_open, dialect)
+        #zero_unt_csv = csv.reader(zero_unt_open, delimiter=',')
 
         for line in zero_unt_csv:
 
@@ -213,7 +215,9 @@ def timeZero(zero_files, thresh):
     # Reads and filters in time zero treated file
     with open(zero_trt_file, 'r') as zero_trt_open:
 
-        zero_trt_csv = csv.reader(zero_trt_open, delimiter='\t')
+        dialect = csv.Sniffer().sniff(zero_trt_open.read(1024), delimiters='\t ,')
+        zero_trt_csv = csv.reader(zero_trt_open, dialect)
+        #zero_trt_csv = csv.reader(zero_trt_open, delimiter=',')
 
         for line in zero_trt_csv:
 
@@ -245,7 +249,11 @@ def filterCounts(unt_file, trt_file, thresh, zero_files, exclude=False):
     treated_raw = {}
 
     with open(unt_file, 'r') as unt_open:
-        unt_csv = csv.reader(unt_open, delimiter='\t')
+
+        dialect = csv.Sniffer().sniff(unt_open.read(1024), delimiters='\t ,')
+        unt_open.seek(0)
+        unt_csv = csv.reader(unt_open, dialect)
+        #unt_csv = csv.reader(unt_open, delimiter=',')
 
         for line in unt_csv:
 
@@ -266,7 +274,11 @@ def filterCounts(unt_file, trt_file, thresh, zero_files, exclude=False):
 
     # Stores treated counts as dictionary of name to count
     with open(trt_file, 'r') as trt_open:
-        trt_csv = csv.reader(trt_open, delimiter='\t')
+
+        dialect = csv.Sniffer().sniff(trt_open.read(1024), delimiters='\t ,')
+        trt_open.seek(0)
+        trt_csv = csv.reader(trt_open, dialect)
+        #trt_csv = csv.reader(trt_open, delimiter=',')
 
         for line in trt_csv:
 
@@ -430,8 +442,6 @@ def enrich_all(untreated, treated, neg_name, split_mark, K, time_zero, back):
                                     zero_unt[entry], total_zero_unt,
                                     0, 1))
 
-    back_raw = neg_raw + tar_raw
-
     if back == 'neg':
         shift = np.median(neg_raw)  # Calculates the shift as a median
 
@@ -439,7 +449,7 @@ def enrich_all(untreated, treated, neg_name, split_mark, K, time_zero, back):
         shift = np.median(tar_raw)
 
     elif back == 'all':
-        shift = np.median(back_raw)
+        shift = np.median(neg_raw + tar_raw)
 
     else:
         sys.exit('Unrecognized option for background choice: ' + back)
@@ -1161,12 +1171,14 @@ def retrieveRecord(res_file, current_version):
             trt_file = rec_csv.next()[1]
             zero_files = rec_csv.next()[1]
             if zero_files:
-                zero_files = eval(zero_files1)
+                zero_files = eval(zero_files)
             file_out = rec_csv.next()[1]
             screen_type = rec_csv.next()[1]
             neg_name = rec_csv.next()[1]
             split_mark = rec_csv.next()[1]
             exclude = rec_csv.next()[1]
+            if exclude:
+                exclude = eval(exclude)
             thresh = int(rec_csv.next()[1])
             K = float(rec_csv.next()[1])
             back = rec_csv.next()[1]

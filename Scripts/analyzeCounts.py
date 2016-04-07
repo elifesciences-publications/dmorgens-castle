@@ -1,6 +1,6 @@
 ###############################################################################
 # David Morgens
-# 03/18/2016
+# 04/06/2016
 ###############################################################################
 # Import neccessary modules
 
@@ -39,25 +39,31 @@ parser.add_argument('name', help='Name for output files', type=str)
 
 # Options for element IDs
 parser.add_argument('-n', '--neg_name',
-                help='Symbol used to denote negative controls',
+                help='Symbol used to denote negative controls. Default is 0.',
                 type=str, default='0')
 
-parser.add_argument('-s', '--split', dest='split_mark', help='Delimiter for element name',
+parser.add_argument('-s', '--split', dest='split_mark',
+                        help='Delimiter for element name. Default is _',
                 type=str, default='_')
 
-parser.add_argument('-x', '--exclude', type=str, help='Excludes substrings', nargs='+')
+parser.add_argument('-x', '--exclude', type=str, nargs='+',
+                        help='Only include elements containing substrings.')
 
 # Optional arguments for how analysis is performed:
 parser.add_argument('-t', '--threshhold', dest='thresh',
-                help='Read cutoff for small count numbers', type=int, default=10)
+                help='Read cutoff for small count numbers. Default is 10.',
+                        type=int, default=10)
 
-parser.add_argument('-k', '--strength', dest='K', help='Normalizing constant',
-                type=float, default=1.0)
+parser.add_argument('-k', '--strength', dest='K',
+                        help='Normalizing constant. Default is 1.',
+                        type=float, default=1.0)
 
-parser.add_argument('-b', '--back', help='Background population for noise estimation',
+parser.add_argument('-b', '--back',
+                help='Background population for noise estimation. Default is neg.',
                 default='neg', choices=['all', 'neg', 'tar'])
 
-parser.add_argument('-z', '--zero_files', help='Time zero count files',
+parser.add_argument('-z', '--zero_files',
+                help='Time zero count files. Optional.',
                 nargs=2, type=str, default='')
 
 # Options for how computation is performed
@@ -80,10 +86,10 @@ parser.add_argument('-of', '--override_file', action='store_true',
                 help='Overrides restriction of output to Results folder')
 
 parser.add_argument('-m', '--mouse', action='store_true',
-                help='Uses mouse gene information')
+                help='Uses mouse gene information.')
 
 parser.add_argument('-ro', '--record', action='store_false',
-                help='Allows script to run without record of count files')
+                help='Allows script to run without record of count files.')
 
 # Saves all input to object args
 args = parser.parse_args()

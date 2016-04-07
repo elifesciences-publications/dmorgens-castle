@@ -1,6 +1,6 @@
 ###############################################################################
 # David Morgens
-# 03/18/2016
+# 04/06/2016
 ###############################################################################
 # Imports neccessary modules
 
@@ -35,31 +35,52 @@ parser = argparse.ArgumentParser(description='Visualizes replicate data')
 # Non-optional arguments: The files containing results, as well as an output
 parser.add_argument('res_file', help='File for untreated results', type=str)
 
-# Optional arguments:
-parser.add_argument('-hi', '--hist', action='store_false')
-parser.add_argument('-of', '--override_file', action='store_true')
-parser.add_argument('-x', '--x_axis', default='CasTLE Score')
-parser.add_argument('-y', '--y_axis', default='CasTLE Gene Effect')
-parser.add_argument('-f', '--file_type', default='png')
+# Arguments for image
+parser.add_argument('-hi', '--hist', action='store_false',
+                        help='Flag to show data instead of 2D histogram')
 
-# Arguments for statistics
-parser.add_argument('-p', '--pvalue', type=float)
-parser.add_argument('-t', '--thresh', type=float)
+parser.add_argument('-f', '--file_type', default='png',
+                        help='File ending/type. Default is "png"')
+
+parser.add_argument('-t', '--thresh', type=float,
+                        help='Color points above given threshold for casTLE score.')
 
 # Arguments for labeling points
-parser.add_argument('-n', '--names', help='List of genes to label', nargs='+', default=[])
-parser.add_argument('-xl', '--xlim', nargs=2, type=float)
-parser.add_argument('-yl', '--ylim', type=float)
+parser.add_argument('-n', '--names', help='List of genes to label.', nargs='+', default=[])
+
+parser.add_argument('-m', '--mouse', action='store_true',
+                        help='Uses mouse gene information.')
+
+#Arguments for changing axes
+
+parser.add_argument('-xl', '--xlim', nargs=2, type=float,
+                        help='x axis range.')
+
+parser.add_argument('-yl', '--ylim', type=float,
+                        help='y axis maximum')
+
+parser.add_argument('-x', '--x_axis', default='casTLE Score',
+                        help='Label for x axis. Default is "casTLE Score"')
+
+parser.add_argument('-y', '--y_axis', default='casTLE Gene Effect',
+                        help='Label for y axis. Default is "casTLE Gene Effect"')
 
 # Arguments for changing columns
-parser.add_argument('-r', '--rat_col', type=int)
-parser.add_argument('-e', '--effect_col', type=int)
-parser.add_argument('-pc', '--pval_col', type=int)
-parser.add_argument('-g', '--gene_col', type=int, default=1)
+parser.add_argument('-r', '--rat_col', type=int,
+                        help='Manual selection of y axis column')
 
-#
-parser.add_argument('-o', '--record', action='store_true')
-parser.add_argument('-m', '--mouse', action='store_true')
+parser.add_argument('-e', '--effect_col', type=int,
+                        help='Manual selection of x axis column')
+
+parser.add_argument('-g', '--gene_col', type=int, default=1,
+                        help='Manual selection of gene name column')
+
+# Override arguments
+parser.add_argument('-o', '--record', action='store_true',
+                        help='Override need for record file.')
+
+parser.add_argument('-of', '--override_file', action='store_true',
+                        help='Override automatic targeting to Results folder')
 
 # Saves all input to object args
 args = parser.parse_args()
@@ -179,18 +200,9 @@ with open(args.res_file, 'r') as res_open:
 
 
 ###############################################################################
-# Calculates FDRs
-
-if args.pvalue:
-    print('Warning: Feature does not exist, why would you think it did?')
-    pass
-
-
-###############################################################################
 # Calculates threshold
 
 thresh_genes = []
-
 
 if args.thresh:
 
@@ -201,8 +213,6 @@ if args.thresh:
         if rat > args.thresh:
 
             thresh_genes.append(gene)
-
-    print('Warning: This one does though')
 
 
 ###############################################################################
@@ -240,9 +250,6 @@ x = []
 y = []
 
 for gene in gene2effect_rat:
-
-#    if gene in thresh_genes:
-#        continue
 
     effect, rat = gene2effect_rat[gene]
 

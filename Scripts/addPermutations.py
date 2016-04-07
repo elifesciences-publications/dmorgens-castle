@@ -1,6 +1,6 @@
 ###############################################################################
 # David Morgens
-# 03/18/2016
+# 04/06/2016
 ###############################################################################
 
 from __future__ import division
@@ -38,12 +38,13 @@ parser.add_argument('-e', '--erase', action='store_true',
 		help='Don\t keep previous permutations')
 
 parser.add_argument('-t', '--out_time', action='store_true',
-		help='Output timestamps')
+		help='Output timestamps.')
 
 parser.add_argument('-r', '--ratio_col', default=8, type=int,
                         help='Column containing ratio scores')
 
-parser.add_argument('-m', '--mouse', action='store_true')
+parser.add_argument('-m', '--mouse', action='store_true',
+                        help='Uses mouse gene information.')
 
 # Saves all input to object args
 args = parser.parse_args()

@@ -1,6 +1,6 @@
 ###############################################################################
 # David Morgens
-# 03/18/2016
+# 04/06/2016
 ###############################################################################
 # Imports neccessary modules
 
@@ -40,31 +40,59 @@ parser.add_argument('res_file2', help='File for treated results', type=str)
 parser.add_argument('name', help='Name for output files', type=str)
 
 # Optional arguments:
-parser.add_argument('-hi', '--hist', action='store_false')
-parser.add_argument('-of', '--override_file', action='store_true')
-parser.add_argument('-x', '--x_axis', default='replicate 1')
-parser.add_argument('-y', '--y_axis', default='replicate 2')
-parser.add_argument('-f', '--file_type', default='pdf')
+parser.add_argument('-hi', '--hist', action='store_false',
+                        help='Flag to show data instead of 2D histogram')
+
+parser.add_argument('-f', '--file_type', default='png',
+                        help='File ending/type. Default is "png"')
 
 # Arguments for statistics
-parser.add_argument('-l', '--line', action='store_false')
-parser.add_argument('-t', '--title', help='Include title', action='store_false')
+parser.add_argument('-l', '--line', action='store_false',
+                        help='Don\'t include linear regression line')
+
+parser.add_argument('-t', '--title', action='store_false',
+                        help='Don\'t include title')
 
 # Arguments for labeling points
 parser.add_argument('-n', '--names', help='List of genes to label', nargs='+', default=[])
-parser.add_argument('-xl', '--xlim', nargs=2, type=float)
-parser.add_argument('-yl', '--ylim', nargs=2, type=float)
+
+parser.add_argument('-m', '--mouse', action='store_true',
+                        help='Uses mouse gene information.')
+
+# Arguments for axes
+parser.add_argument('-xl', '--xlim', nargs=2, type=float,
+                        help='x axis range')
+
+parser.add_argument('-yl', '--ylim', nargs=2, type=float,
+                        help='y axis range')
+
+parser.add_argument('-x', '--x_axis', default='replicate 1',
+                        help='Label for x axis. Default is "replicate 1"')
+
+parser.add_argument('-y', '--y_axis', default='replicate 2',
+                        help='Label for y axis. Default is "replicate 2"')
 
 # Arguments for changing columns
-parser.add_argument('-cr1', '--rat_col1', type=int)
-parser.add_argument('-ce1', '--effect_col1', type=int)
-parser.add_argument('-cr2', '--rat_col2', type=int)
-parser.add_argument('-ce2', '--effect_col2', type=int)
-parser.add_argument('-g', '--gene_col', type=int, default=1)
+parser.add_argument('-cr1', '--rat_col1', type=int,
+                        help='Manual selection of significance column.')
 
-#
+parser.add_argument('-ce1', '--effect_col1', type=int,
+                        help='Manual selection of effect column.')
+
+parser.add_argument('-cr2', '--rat_col2', type=int,
+                        help='Manual selection of significance column.')
+
+parser.add_argument('-ce2', '--effect_col2', type=int,
+                        help='Manual selection of effect column.')
+
+parser.add_argument('-g', '--gene_col', type=int, default=1,
+                        help='Manual selection of gene name column.')
+
+# Override options
 parser.add_argument('-o', '--record', action='store_true')
-parser.add_argument('-m', '--mouse', action='store_true')
+
+parser.add_argument('-of', '--override_file', action='store_true',
+                        help='Override automatic targeting to Results folder')
 
 # Saves all input to object args
 args = parser.parse_args()
@@ -156,10 +184,10 @@ elif script1 == 'analyzeCounts.py':
 elif script1 == 'analyzeCombo.py':
 
     if not args.rat_col1:
-        args.rat_col1 = 14
+        args.rat_col1 = 13
 
     if not args.effect_col1:
-        args.effect_col1 = 13
+        args.effect_col1 = 12
 
 else:
     sys.exit('Error: Result format not recognized')
@@ -178,10 +206,10 @@ elif script2 == 'analyzeCounts.py':
 elif script2 == 'analyzeCombo.py':
 
     if not args.rat_col2:
-        args.rat_col2 = 14
+        args.rat_col2 = 13
 
-    if not args.effect_col1:
-        args.effect_col2 = 13
+    if not args.effect_col2:
+        args.effect_col2 = 12
 
 else:
     sys.exit('Error: Result format not recognized')
@@ -317,8 +345,8 @@ if args.hist:
 else:
     plt.plot(x, y, '.', color='0', alpha=0.25, markersize=10, markeredgewidth=0)
 
-plt.xlabel('Signed ratio statistic for ' + args.x_axis)
-plt.ylabel('Signed ratio statistic for ' + args.y_axis)
+plt.xlabel('casTLE score for ' + args.x_axis)
+plt.ylabel('casTLE score for ' + args.y_axis)
 
 slope, intercept, r_value, p_value, std_err = st.linregress(x, y)
 
@@ -363,8 +391,8 @@ for gene in gene2effects:
 plt.figure(dpi=400)
 
 plt.plot(x, y, '.', color='0', alpha=0.25, markersize=10, markeredgewidth=0)
-plt.xlabel('Signed ratio statistic for ' + args.x_axis)
-plt.ylabel('Signed ratio statistic for ' + args.y_axis)
+plt.xlabel('casTLE effect estimate for ' + args.x_axis)
+plt.ylabel('casTLE effect estimate for ' + args.y_axis)
 
 slope, intercept, r_value, p_value, std_err = st.linregress(x, y)
 

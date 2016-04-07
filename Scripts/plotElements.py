@@ -1,6 +1,6 @@
 ###############################################################################
 # David Morgens
-# 03/18/2016
+# 04/06/2016
 ###############################################################################
 # Imports neccessary modules
 
@@ -30,7 +30,7 @@ current_version = '1.0'
 # Parses input using argparse module
 
 # Initiates input parser
-parser = argparse.ArgumentParser(description='Visualizes replicate data')
+parser = argparse.ArgumentParser(description='Visualizes replicate data element-wise')
 
 # Non-optional arguments: The files containing results, as well as an output
 parser.add_argument('res_file1', help='File for untreated results', type=str)
@@ -40,14 +40,24 @@ parser.add_argument('res_file2', help='File for treated results', type=str)
 parser.add_argument('name', help='Name for output file', type=str)
 
 # Optional arguments:
-parser.add_argument('-of', '--override_file', action='store_true')
-parser.add_argument('-x', '--x_axis', default='replicate 1')
-parser.add_argument('-y', '--y_axis', default='replicate 2')
-parser.add_argument('-f', '--file_type', default='pdf')
+parser.add_argument('-of', '--override_file', action='store_true',
+                        help='Override automatic targeting to Results folder')
+
+parser.add_argument('-x', '--x_axis', default='replicate 1',
+                        help='Label for x axis. Default is "replicate 1"')
+
+parser.add_argument('-y', '--y_axis', default='replicate 2',
+                        help='Label for y axis. Default is "replicate 2"')
+
+parser.add_argument('-f', '--file_type', default='png',
+                        help='File ending/type. Default is "png"')
 
 # Arguments for statistics
-parser.add_argument('-l', '--line', action='store_false')
-parser.add_argument('-t', '--title', help='Include title', action='store_false')
+parser.add_argument('-l', '--line', action='store_false',
+                        help='Don\'t include linear regression line')
+
+parser.add_argument('-t', '--title', action='store_false',
+                        help='Don\'t include title')
 
 # Saves all input to object args
 args = parser.parse_args()

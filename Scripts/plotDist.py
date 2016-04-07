@@ -1,6 +1,6 @@
 ###############################################################################
 # David Morgens
-# 03/18/2016
+# 04/06/2016
 ###############################################################################
 # Imports neccessary modules
 
@@ -33,18 +33,23 @@ current_version = '1.0'
 parser = argparse.ArgumentParser(description='Visualizes count distribution')
 
 # Non-optional arguments: The files containing counts, as well as an output
-parser.add_argument('name', help='Name for output files', type=str)
+parser.add_argument('name', help='Name for output file.', type=str)
 
-parser.add_argument('count_files', help='Count files', type=str, nargs='+')
+parser.add_argument('count_files', help='Count files.', type=str, nargs='+')
 
 # Optional arguments:
-parser.add_argument('-of', '--override_file', action='store_true')
+parser.add_argument('-of', '--override_file',
+                        help='Override automatic targeting to Results folder',
+                        action='store_true')
 
-parser.add_argument('-l', '--legend', type=str, nargs='+')
+parser.add_argument('-l', '--legend', type=str, nargs='+',
+                        help='Name for corresponding count file')
 
-parser.add_argument('-x', '--exclude', type=str, help='Excludes substrings', nargs='+')
+parser.add_argument('-x', '--exclude', type=str,
+                        help='Only include elements containing substrings.', nargs='+')
 
-parser.add_argument('-s', '--search', type=str)
+parser.add_argument('-s', '--search', type=str,
+                        help='Use count files in indicated folder.')
 
 # Saves all input to object args
 args = parser.parse_args()
@@ -99,7 +104,10 @@ for count_file in args.count_files:
 
     # Save the counts from each element
     with open(count_file, 'r') as count_open:
-        count_csv = csv.reader(count_open, delimiter='\t')
+
+        dialect = csv.Sniffer().sniff(count_open.read(1024), delimiters='\t ,')
+        count_open.seek(0)
+        count_csv = csv.reader(count_open, dialect)
 
         for line in count_csv:
 

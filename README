@@ -1,3 +1,5 @@
+###############################################################################
+
 Copyright (c) 2016, David W Morgens
 All rights reserved.
 
@@ -23,48 +25,324 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Analyzing screen data using casTLE.
 David Morgens
-03/18/2016
+04/06/2016
 Version 1.0
 
+Version 0.7 used in Morgens et al (2016) "Systematic comparison of CRISPR/Cas9
+and RNAi screens for essential genes." Nat Bio Tech (in press). Implementation
+has changed but results should be identical.
+
+
+###############################################################################
+# Requirements
 ###############################################################################
 
-Requirements:
 Scripts are written for python 2.7, though should be compatible with python 3.
-Program requires bowtie installed
+makeCount.py and makeIndices.py requires bowtie installed
 
 Required modules: numpy, math, csv, collections, os, scipy, sys, random, re,
-argparse, subprocess, shlex, time
+argparse, subprocess, shlex, time, matplotlib, warnings
 
 Optional module: pp (Parallel python), which will allow for parallel processing,
 greatly increasing the speed of computation.
 
 
 ###############################################################################
-Quick use:
+# Quick use:
+###############################################################################
 
-python Scripts/makeIndices <screen type> <library file> <output bowtie file>
+Use -h to view documentation.
 
+Make bowtie index:
+python Scripts/makeIndices.py <screen type> <library file> <output bowtie file>
+
+Align sequence files:
 python Scripts/makeCounts.py <file base for fastq files> <output file> <screen type>
 
+Compare two count files with casTLE:
 python Scripts/analyzeCounts.py <count file 1> <count file 2> <output results file>
 
+Calculate p-values for casTLE result file:
 python Scripts/addPermutations.py <results file> <number of permutations>
 
+Combine multiple casTLE result files:
 python Scripts/analyzeCombo.py <results file 1> <results file 2> <output file>
 
+Calculate p-values for combination of multiple casTLE results:
 python Scripts/addCombo.py <combo file> <number of permutations>
 
+Plot distribution of elements from count file:
 python Scripts/plotDist.py <output name> <count file 1> <count file 2> ...
 
+Plot casTLE result file:
 python Scripts/plotVolcano.py <results file>
 
-python Scripts/plotGenes.py <resutls file> <gene name 1> <gene name 2> ...
+Plot individual gene results from casTLE result file:
+python Scripts/plotGenes.py <results file> <gene name 1> <gene name 2> ...
 
+Compare enrichment of individual elements between multiple result files:
 python Scripts/plotElements.py <results file 1> <results file 2> <output name>
 
+Compare effect size and confidence between multiple result files:
 python Scripts/plotRep.py <results file 1> <results file 2> <output name>
 
 
 ###############################################################################
+# Overview of directory system
+###############################################################################
 
-Comprehensive README to follow
+For the sake of reproducibility and organization, the casTLE scripts work
+only within the provided directory structure. This can generally be overrriden
+using -or, which waives the requirement for record files, and -of, which waives
+automatic placement of files in certain folders.
+
+When running many of the scripts, they will create a record file *_record.txt,
+which contains a record of what parameters were used as well as provides downstream
+scripts with neccessary information. Because of this memory, most scripts will
+not work if a file is moved out of the directory system.
+
+Directory is as follows:
+Data - contains count files
+GenRef - contains gene descriptions, GO terms, and symbol/ID conversion info
+Indices - contains bowtie indexes for alignments
+Records - contains permanent record files for reproducibility's sake.
+Results - contains result and combo files
+Scripts - contains casTLE scripts.
+
+All analyses should be run from the top folder.
+python Scripts/*.py
+
+
+###############################################################################
+# Overview of file types and formats
+###############################################################################
+# Count file
+
+Description: The counts of elements in a single sample.
+Naming scheme: <name>_counts.csv
+Location: Stored in Data folder
+Format: Tab or comma delimited. First column element name, second column counts
+<element_name>,<count for element>
+Record: <name>_record.txt 
+Example:
+0None_none_ACOC_204550.4501,252
+0None_none_ACOC_204552.4503,239
+0None_none_ACOC_204555.4506,105
+0None_none_ACOC_204562.4513,180
+
+The format for element names allows downstream programs to understand gene
+targets and identify negative controls. The first part of the element name
+is used as the GeneID. And negative controls are indicated by the starting string.
+
+If the symbol denoting negative controls was '0', then both
+0None_none_ACOC_204550.4501
+0Safe_safe_ACOC_204123.3245
+would be considered negative controls.
+
+For display of individaul element enrichments, the last part of the element
+name is used as an element ID. Note this does not have to be unique between
+genes.
+
+
+###############################################################################
+# Result file
+
+Description: The output of casTLE from the comparison of two count files
+Naming scheme: <name>.csv
+Location: Stored in Results folder
+Format: Comma delimited.
+Record: <name>_record.txt
+
+Each row represents a single gene.
+"GeneID", "Symbol", and "GeneInfo" identify the gene
+"Localization", "Process", and "Function" display the GO terms for that gene
+"Element #" indicates the number of elements targeting that gene found
+"casTLE Effect" indicates the most likely effect size as determined by casTLE
+"casTLE Score" indicates the confidence in that effect size, where larger is
+more confident.
+"casTLE p-value" is the estimated p-value from the casTLE Score. If 'N/A',
+permutations need to be run to estimate.
+"Minimum Effect Estimate" and "Maximum Effect Estimate" indicate the 95% credible
+interval for the casTLE effect size estimate
+"Individual Elements" indicates the individual element enrichments. These
+are formatted as:
+<enrichment value> : <element ID>
+
+
+###############################################################################
+# Combo file
+
+Description: The output of casTLE from the combination of two result files
+Naming scheme: <name>.csv
+Location: Stored in Results folder
+Format: Comma delimited.
+Record: <name>_record.txt
+
+Each row represents a single gene
+"GeneID", "Symbol", and "GeneInfo" identify the gene
+"Localization", "Process", and "Function" display the GO terms for that gene
+"Element # 1" and "Element # 2" indicates the number of elements targeting that gene
+found in each result file.
+"casTLE Effect 1" and "casTLE Effect 2" indicates the most likely effect size
+as determined by casTLE from each individual result
+"casTLE Score 1" and "casTLE Score 2" indicates the confidence in that effect
+size, where larger is more confident, from each individual result.
+"Combo casTLE Effect" indicates the most likely effect size as determined by
+casTLE from the combination of both results.
+"Combo casTLE Score" indicates the confidence in that effect size, where
+larger is more confident, from the combination of both results.
+"Combo casTLE p-value" is the estimated p-value from the Combo casTLE score.
+If "N/A", then run addCombo.py to calculate p-values.
+"Minimum Effect Estimate" and "Maximum Effect Estimate" indicate the 95% credible
+interval for the Combo casTLE effect size estimate
+
+
+###############################################################################
+# Overview of procedures
+###############################################################################
+#
+
+Overview of alignment and count file creation
+Overview of making result files from count files
+Overview of combination analysis
+
+###############################################################################
+# Overview of alignment and count file creation
+
+1) Create a bowtie index using makeIndices.py. This will also let you name your
+screen type for future reference.
+
+2) Use makeCounts.py to create a count file from your fastq file. Each count
+file will correspond to a single condition.
+
+
+###############################################################################
+# Overview of making result files from count files
+
+Indicate two count files to compare using:
+python Scripts/analyzeCounts.py <count file 1> <count file 2> <output results file>
+python Scripts/analyzeCounts.py Data/untreated_counts.csv Data/treated_counts.csv name
+A result file will be created at Results/<output results file>.
+
+If using count files not created by makeCounts.py. You will need to override
+the search for a record file. To do this you will also need to indicate a 
+negative control symbol or select a non-negative control background with -b:
+python Scripts/analyzeCounts.py <count file 1> <count file 2> <output results file> 
+    -n <negative symbol>
+    -r
+or
+python Scripts/analyzeCounts.py <count file 1> <count file 2> <output results file> 
+    -b tar
+    -r
+
+2) In order to calculate p-values from the casTLE score distrubution, the null
+distribution needs to be estimated by permutation. To this, run
+python Scripts/addPermutations.py <result file> <number of permutations>
+python Scripts/addPermutations.py Results/Test/result.csv 10000
+
+This command will create an auxiliary ref file and replace your result file
+with one containing estimated p-values. Note that the p-value is an estimate
+and will become more accurate (and potentially more significant) with more
+permutations. To add more permutations to a file, simply call addPermutations.py
+again. It will add to the existing number of permutations.
+
+
+###############################################################################
+# Overview of combination analysis
+
+1) casTLE can also combine results from multiple screens. This can either be
+combining two replicates of the same screen, or combining two disparate screening
+types, such as shRNA and CRISPR/Cas9. Use analyzeCombo.py to indicate two result
+files:
+python Scripts/analyzeCombo.py <result file 1> <result file 2> <output file>
+This will create a combo file at Results/<output file>.
+
+2) To estimate p-values for combination results, use addCombo.py
+python Scripts/addCombo.py <combo file> <number of permutations>
+
+###############################################################################
+# Available plotting scripts
+###############################################################################
+
+In order to visualize your data, the available plotting scripts are:
+plotDist.py
+plotVolcano.py
+plotGenes.py
+plotElements.py
+plotRep.py
+
+
+###############################################################################
+# plotDist.py
+
+Plot distribution of elements from count file:
+python Scripts/plotDist.py <output name> <count file 1> <count file 2> ...
+This will create an image at Results/<output name>
+
+This will allow the visualization of the diversity in the given count files.
+This can be used to identify bottlenecked samples, or see the effect of
+selection on the diversity. Diversity scores are calculated as normalized
+entropy using the total number of elements to define the max entropy.
+
+Any number of count files can be used. Use -l to label samples.
+
+Example:
+
+python Scripts/plotDist.py test_dist Data/plasmid_counts.csv Data/untreated_counts.csv Data/treated_counts.csv -l Plasmid Untreated Treated
+
+
+###############################################################################
+# plotVolcane.py
+
+Creates a 2D histogram of effect by signficance
+python Scripts/plotVolcano.py <results file>
+
+Visualizes the results from a single result file. Individual points can be labeled
+with -n. Creates image at <results file>_volcano.*
+Image type can be changed with -f.
+
+Example:
+
+python Scripts/plotVolcano.py Results/results.csv -n MTOR MYC
+
+
+###############################################################################
+# plotGenes.py
+
+Plot individual gene results from casTLE result file:
+python Scripts/plotGenes.py <results file> <gene name 1> <gene name 2> ...
+
+Create cloud and hist plots for individual genes from a given result file.
+Cloud plots show data as raw counts with negative controls as reference.
+Hist plots show density plot for targeting elements and negative controls.
+Created files are place at <results file>_<gene name>_*
+
+Example:
+
+python Scripts/plotGenes.py Results/results.csv MTOR MYC
+
+
+###############################################################################
+# plotElements.py
+
+Compare enrichment of individual elements between multiple result files:
+python Scripts/plotElements.py <results file 1> <results file 2> <output name>
+
+Example:
+python Scripts/plotElements.py Results/replicate1.csv Results/replicate2.csv rep_rep1_rep2
+
+
+###############################################################################
+# plotRep.py
+
+Compare effect size and confidence between multiple result files:
+python Scripts/plotRep.py <results file 1> <results file 2> <output name>
+
+This allows you to compare two result files, visualizing reproducibility or
+lack thereof.
+
+Example:
+python Scripts/plotRep.py Results/replicate1.csv Results/replicate2.csv rep_rep1_rep2
+
+
+###############################################################################
