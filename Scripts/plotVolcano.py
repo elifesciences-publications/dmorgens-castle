@@ -59,11 +59,11 @@ parser.add_argument('-xl', '--xlim', nargs=2, type=float,
 parser.add_argument('-yl', '--ylim', type=float,
                         help='y axis maximum')
 
-parser.add_argument('-x', '--x_axis', default='casTLE Score',
-                        help='Label for x axis. Default is "casTLE Score"')
+parser.add_argument('-x', '--x_axis', default='casTLE Gene Effect',
+                        help='Label for x axis. Default is "casTLE Gene Effect"')
 
-parser.add_argument('-y', '--y_axis', default='casTLE Gene Effect',
-                        help='Label for y axis. Default is "casTLE Gene Effect"')
+parser.add_argument('-y', '--y_axis', default='casTLE Score',
+                        help='Label for y axis. Default is "casTLE Score"')
 
 # Arguments for changing columns
 parser.add_argument('-r', '--rat_col', type=int,
@@ -148,19 +148,13 @@ elif script == 'analyzeCounts.py':
     if not args.effect_col:
         args.effect_col = 7
 
-    if not args.pval_col:
-        args.pval_col = 9
-
 elif script == 'analyzeCombo.py':
 
     if not args.rat_col:
-        args.rat_col = 14
+        args.rat_col = 13
 
     if not args.effect_col:
-        args.effect_col = 13
-
-    if not args.pval_col:
-        args.pval_col = 15
+        args.effect_col = 12
 
 else:
     sys.exit('Error: Result format not recognized')

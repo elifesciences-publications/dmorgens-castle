@@ -25,12 +25,17 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Analyzing screen data using casTLE.
 David Morgens
-04/06/2016
+04/28/2016
 Version 1.0
 
 Version 0.7 used in Morgens et al (2016) "Systematic comparison of CRISPR/Cas9
 and RNAi screens for essential genes." Nat Bio Tech (in press). Implementation
-has changed but results should be identical.
+has changed but results should be identical. Version 0.7 scripts available
+from Scripts/Scripts0.7
+
+If you use these scripts please cite:
+Morgens et al (2016) "Systematic comparison of CRISPR/Cas9 and RNAi screens
+for essential genes." Nat Bio Tech (in press)
 
 
 ###############################################################################
@@ -45,6 +50,25 @@ argparse, subprocess, shlex, time, matplotlib, warnings
 
 Optional module: pp (Parallel python), which will allow for parallel processing,
 greatly increasing the speed of computation.
+
+
+###############################################################################
+# Installation
+###############################################################################
+
+Option 1 for repository functionality:
+Download and install mercurial from https://www.mercurial-scm.org/
+Run command:
+hg clone https://bitbucket.org/dmorgens/castle
+
+Option 2 for source file download:
+Go to https://bitbucket.org/dmorgens/castle/downloads
+Select "Download repository".
+Extract folder.
+
+Python 2.7 and modules available from https://www.continuum.io/downloads
+Parallel Python module available from http://www.parallelpython.com/
+Bowtie available at http://bowtie-bio.sourceforge.net/index.shtml
 
 
 ###############################################################################
@@ -130,6 +154,9 @@ Example:
 0None_none_ACOC_204555.4506,105
 0None_none_ACOC_204562.4513,180
 
+Each element name must contain the target gene ID as the first part:
+<geneID>_<Element ID>
+
 The format for element names allows downstream programs to understand gene
 targets and identify negative controls. The first part of the element name
 is used as the GeneID. And negative controls are indicated by the starting string.
@@ -155,18 +182,24 @@ Record: <name>_record.txt
 
 Each row represents a single gene.
 "GeneID", "Symbol", and "GeneInfo" identify the gene
+
 "Localization", "Process", and "Function" display the GO terms for that gene
+
 "Element #" indicates the number of elements targeting that gene found
+
 "casTLE Effect" indicates the most likely effect size as determined by casTLE
+
 "casTLE Score" indicates the confidence in that effect size, where larger is
 more confident.
+
 "casTLE p-value" is the estimated p-value from the casTLE Score. If 'N/A',
 permutations need to be run to estimate.
+
 "Minimum Effect Estimate" and "Maximum Effect Estimate" indicate the 95% credible
 interval for the casTLE effect size estimate
+
 "Individual Elements" indicates the individual element enrichments. These
-are formatted as:
-<enrichment value> : <element ID>
+are formatted as: <enrichment value> : <element ID>
 
 
 ###############################################################################
@@ -180,19 +213,27 @@ Record: <name>_record.txt
 
 Each row represents a single gene
 "GeneID", "Symbol", and "GeneInfo" identify the gene
+
 "Localization", "Process", and "Function" display the GO terms for that gene
+
 "Element # 1" and "Element # 2" indicates the number of elements targeting that gene
 found in each result file.
+
 "casTLE Effect 1" and "casTLE Effect 2" indicates the most likely effect size
 as determined by casTLE from each individual result
+
 "casTLE Score 1" and "casTLE Score 2" indicates the confidence in that effect
 size, where larger is more confident, from each individual result.
+
 "Combo casTLE Effect" indicates the most likely effect size as determined by
 casTLE from the combination of both results.
+
 "Combo casTLE Score" indicates the confidence in that effect size, where
 larger is more confident, from the combination of both results.
+
 "Combo casTLE p-value" is the estimated p-value from the Combo casTLE score.
 If "N/A", then run addCombo.py to calculate p-values.
+
 "Minimum Effect Estimate" and "Maximum Effect Estimate" indicate the 95% credible
 interval for the Combo casTLE effect size estimate
 
@@ -215,6 +256,10 @@ screen type for future reference.
 2) Use makeCounts.py to create a count file from your fastq file. Each count
 file will correspond to a single condition.
 
+References to each bowtie index are stored in Indices/screen_type_index.txt
+in tab-delimited form. This allows both a quick reference name and a full
+descriptive name.
+
 
 ###############################################################################
 # Overview of making result files from count files
@@ -229,11 +274,11 @@ the search for a record file. To do this you will also need to indicate a
 negative control symbol or select a non-negative control background with -b:
 python Scripts/analyzeCounts.py <count file 1> <count file 2> <output results file> 
     -n <negative symbol>
-    -r
+    -ro
 or
 python Scripts/analyzeCounts.py <count file 1> <count file 2> <output results file> 
     -b tar
-    -r
+    -ro
 
 2) In order to calculate p-values from the casTLE score distrubution, the null
 distribution needs to be estimated by permutation. To this, run
@@ -260,6 +305,7 @@ This will create a combo file at Results/<output file>.
 2) To estimate p-values for combination results, use addCombo.py
 python Scripts/addCombo.py <combo file> <number of permutations>
 
+
 ###############################################################################
 # Available plotting scripts
 ###############################################################################
@@ -280,7 +326,7 @@ python Scripts/plotDist.py <output name> <count file 1> <count file 2> ...
 This will create an image at Results/<output name>
 
 This will allow the visualization of the diversity in the given count files.
-This can be used to identify bottlenecked samples, or see the effect of
+This can be used to identify bottlenecked samples or see the effect of
 selection on the diversity. Diversity scores are calculated as normalized
 entropy using the total number of elements to define the max entropy.
 
@@ -292,9 +338,9 @@ python Scripts/plotDist.py test_dist Data/plasmid_counts.csv Data/untreated_coun
 
 
 ###############################################################################
-# plotVolcane.py
+# plotVolcano.py
 
-Creates a 2D histogram of effect by signficance
+Creates a 2D histogram of effect by significance
 python Scripts/plotVolcano.py <results file>
 
 Visualizes the results from a single result file. Individual points can be labeled
@@ -303,7 +349,7 @@ Image type can be changed with -f.
 
 Example:
 
-python Scripts/plotVolcano.py Results/results.csv -n MTOR MYC
+python Scripts/plotVolcano.py Results/results.csv -n MTOR MYC -f eps
 
 
 ###############################################################################
@@ -314,8 +360,9 @@ python Scripts/plotGenes.py <results file> <gene name 1> <gene name 2> ...
 
 Create cloud and hist plots for individual genes from a given result file.
 Cloud plots show data as raw counts with negative controls as reference.
+
 Hist plots show density plot for targeting elements and negative controls.
-Created files are place at <results file>_<gene name>_*
+Created files are placed at <results file>_<gene name>_*
 
 Example:
 

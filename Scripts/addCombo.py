@@ -206,7 +206,7 @@ with open(args.res_file, 'w') as out_open:
 
 with open(rec_file, 'a') as rec_open:
     rec_csv = csv.writer(rec_open, delimiter='\t')
-    rec_csv.writerow(['addCombo.py', '0.8'])
+    rec_csv.writerow(['addCombo.py', current_version])
     rec_csv.writerow(['Date', time.strftime("%d:%m:%Y")])
     rec_csv.writerow(['Number of permutations', all_perm_num])
 

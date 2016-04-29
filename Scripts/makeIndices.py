@@ -1,7 +1,8 @@
 ###############################################################################
 # David Morgens
-# 04/06/2016
-###############################################################################
+# 04/28/2016
+################################################################################
+# Import neccessary modules
 
 import argparse
 import sys
@@ -14,24 +15,26 @@ import os
 ##############################################################################
 # Initiates argument parser
 
-parser = argparse.ArgumentParser(description='Screen type, oligo file, name')
+parser = argparse.ArgumentParser('Make index for alignment')
 
-parser.add_argument('oligo_file', help='Input oligo file', type=str)
+parser.add_argument('oligo_file', help='Input oligo file; csv format', type=str)
 
-parser.add_argument('short_name', help='The screen type', type=str)
+parser.add_argument('short_name', help='The screen type for reference', type=str)
 
-parser.add_argument('full_name', help='Name output files', type=str)
+parser.add_argument('full_name', help='Name for output files', type=str)
 
 # Optional arguments: base trimming of fasta
-parser.add_argument('-s','--strim', help='Number of bases to'
-                    'be trimmed from the start', default=31, type=int)
+parser.add_argument('-s','--strim', help='Trim bases from start; default is 31',
+                        default=31, type=int)
 
-parser.add_argument('-e', '--etrim', help='Number of bases to'
-                    'be trimmed from the end', default=37, type=int)
+parser.add_argument('-e', '--etrim', help='Trim bases from end; default is 37',
+                        default=37, type=int)
 
-parser.add_argument('-o', '--override', help='Rename indices', action='store_true')
+parser.add_argument('-o', '--override', help='Flag to override existing indexes',
+                        action='store_true')
 
-parser.add_argument('-t', '--test', help="Don't run bowtie", action='store_true')
+parser.add_argument('-t', '--test', help="Flag to not run bowtie",
+                        action='store_true')
 
 args = parser.parse_args()
 
@@ -39,7 +42,7 @@ args = parser.parse_args()
 ##############################################################################
 #
 
-index_file = os.path.join('Indices','screen_type_index.txt')
+index_file = os.path.join('Indices', 'screen_type_index.txt')
 index = []
 
 # Check whether screen type and name already exist
@@ -124,7 +127,7 @@ index_name = os.path.join('Indices', args.full_name)
 index.append([args.short_name, index_name])
 index.sort(key=lambda x: x[0])
 
-with open(index_file,'w') as index_open:
+with open(index_file, 'w') as index_open:
 
     index_csv = csv.writer(index_open, delimiter='\t')
 

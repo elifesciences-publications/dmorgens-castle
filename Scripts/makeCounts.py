@@ -1,6 +1,6 @@
 ###############################################################################
 # David Morgens
-# 04/06/2016
+# 04/28/2016
 ###############################################################################
 # Import neccessary modules
 
@@ -57,25 +57,25 @@ parser.add_argument('screen_type', help='The screen type', type=str,
 
 # Optional arguments:
 parser.add_argument('-m', '--mismatch', dest='mismatch',
-                    help='The number of tolerated mismatches',
+                    help='The number of tolerated mismatches; default is 0',
                     type=str, default='0')
 
 parser.add_argument('-l', '--length', dest='read_length',
-                    help='Select the length of read for trimming', type=int,
-                    default=17)
+                    help='Select the length of read for trimming; default is 17',
+                    type=int, default=17)
 
 parser.add_argument('-fi', '--filter',
-                    help='Filter reads which are too short', action='store_true')
+                    help='Flag to filter too short reads', action='store_true')
 
 parser.add_argument('-b', '--bowtie',
-                    help='Location of Bowtie aligner', type=str,
+                    help='Location of Bowtie aligner; default is bowtie', type=str,
                     default='bowtie')
 
 parser.add_argument('-a', '--add_file',
-		    help='Location of additional FASTQ files')
+		    help='Location of additional FASTQ files, if any')
 
 parser.add_argument('-s', '--strand', default='-', type=str, choices=['-','+'],
-		    help='Which strand to align to')
+		    help='Filters reads by alignment strand; default is -')
 
 # Saves input to args object
 args = parser.parse_args()
