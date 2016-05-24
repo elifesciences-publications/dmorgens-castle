@@ -24,11 +24,11 @@ parser.add_argument('short_name', help='The screen type for reference', type=str
 parser.add_argument('full_name', help='Name for output files', type=str)
 
 # Optional arguments: base trimming of fasta
-parser.add_argument('-s','--strim', help='Trim bases from start; default is 31',
-                        default=31, type=int)
+parser.add_argument('-s','--strim', help='Trim bases from start; default is 0',
+                        default=0, type=int)
 
-parser.add_argument('-e', '--etrim', help='Trim bases from end; default is 37',
-                        default=37, type=int)
+parser.add_argument('-e', '--etrim', help='Trim bases from end; default is 0',
+                        default=0, type=int)
 
 parser.add_argument('-o', '--override', help='Flag to override existing indexes',
                         action='store_true')
@@ -85,6 +85,7 @@ with open(args.oligo_file, 'r') as oligo_file:
             oligo_list.append(['>' + line[0], oligo])
 
 if args.test:
+    print('Sample oligo: ' + oligo_list[0][1])
     print('Sample oligo: ' + oligo)
     print('Sample length: ' + str(len(oligo)))
     sys.exit('Warning: Files not created')

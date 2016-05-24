@@ -150,5 +150,17 @@ with open(args.res_file, 'w') as out_open:
         # Writes to file
         out_csv.writerow(line)
 
+###############################################################################
+# Appends note to existing record
+
+name = args.res_file[: -4]
+rec_file = name + '_record.txt'
+
+with open(rec_file, 'a') as rec_open:
+    rec_csv = csv.writer(rec_open, delimiter='\t')
+    rec_csv.writerow(['addPermutations.py', current_version])
+    rec_csv.writerow(['Date', time.strftime("%d:%m:%Y")])
+    rec_csv.writerow(['Number of permutations', all_perm_num])
+
 
 ###############################################################################

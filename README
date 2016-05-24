@@ -25,18 +25,17 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Analyzing screen data using casTLE.
 David Morgens
-04/28/2016
+05/23/2016
 Version 1.0
 
 Version 0.7 used in Morgens et al (2016) "Systematic comparison of CRISPR/Cas9
-and RNAi screens for essential genes." Nat Bio Tech (in press). Implementation
+and RNAi screens for essential genes." Nat Biotechnol advance on. Implementation
 has changed but results should be identical. Version 0.7 scripts available
 from Scripts/Scripts0.7
 
 If you use these scripts please cite:
-Morgens et al (2016) "Systematic comparison of CRISPR/Cas9 and RNAi screens
-for essential genes." Nat Bio Tech (in press)
-
+Morgens DW, Deans RM, Li A, Bassik MC (2016) Systematic comparison of
+CRISPR/Cas9 and RNAi screens for essential genes. Nat. Biotechnol. advance on
 
 ###############################################################################
 # Requirements
@@ -78,7 +77,7 @@ Bowtie available at http://bowtie-bio.sourceforge.net/index.shtml
 Use -h to view documentation.
 
 Make bowtie index:
-python Scripts/makeIndices.py <screen type> <library file> <output bowtie file>
+python Scripts/makeIndices.py <oligo file> <screen type> <output bowtie file>
 
 Align sequence files:
 python Scripts/makeCounts.py <file base for fastq files> <output file> <screen type>
@@ -251,7 +250,10 @@ Overview of combination analysis
 # Overview of alignment and count file creation
 
 1) Create a bowtie index using makeIndices.py. This will also let you name your
-screen type for future reference.
+screen type for future reference. To do this you need an oligo file containing
+the name and sequence of each element in your screen. This is a comma-delimited
+file with two columns: <element name>,<element sequence>. See count file
+overview for element naming schemes.
 
 2) Use makeCounts.py to create a count file from your fastq file. Each count
 file will correspond to a single condition.

@@ -1,6 +1,6 @@
 ###############################################################################
 # David Morgens
-# 04/28/2016
+# 05/23/2016
 ###############################################################################
 # Import neccessary modules
 
@@ -61,7 +61,7 @@ parser.add_argument('-m', '--mismatch', dest='mismatch',
                     type=str, default='0')
 
 parser.add_argument('-l', '--length', dest='read_length',
-                    help='Select the length of read for trimming; default is 17',
+                    help='Select the number of bases to align; default is 17',
                     type=int, default=17)
 
 parser.add_argument('-fi', '--filter',
@@ -74,8 +74,12 @@ parser.add_argument('-b', '--bowtie',
 parser.add_argument('-a', '--add_file',
 		    help='Location of additional FASTQ files, if any')
 
-parser.add_argument('-s', '--strand', default='-', type=str, choices=['-','+'],
-		    help='Filters reads by alignment strand; default is -')
+parser.add_argument('-s', '--strand', type=str, choices=['-','+'],
+		    help='Filters reads by alignment strand; default is none')
+
+parser.add_argument('-p', '--process',
+                help='Number of processors to use; default is 8', type=str,
+                default="8")
 
 # Saves input to args object
 args = parser.parse_args()
@@ -198,9 +202,9 @@ print('Mapping reads')
 # -q is the input file and indicates that it is fastq.
 # mapFile stores the output alignments.
 # --un stores the reads with no alignments
-subprocess.call(shlex.split(args.bowtie + ' -v ' + args.mismatch +
-                            ' -a -p 8 ' + index + ' -q ' + fastqFile +
-                            ' ' + mapFile + ' --un ' + unmapFile))
+subprocess.call(shlex.split(" ".join([args.bowtie,"-v", args.mismatch,
+                            "-a -p", args.process, index, "-q", fastqFile,
+                            mapFile, "--un", unmapFile])))
 
 
 ###############################################################################
@@ -229,24 +233,26 @@ with open(mapFile, 'r') as map_open:
         strand = line[1]
         read = line[0]
 
-        # Checks if alignment is to the correct strant
-        if strand == args.strand:
-            counts[name] += 1
-            total_counts += 1
+        # Checks if alignment is to the correct strand
+        if args.strand and strand != args.strand:
+            continue
 
-            # Counts multimapped reads
-            if read == last_read:
-                ambig_counts += 1
-                ambig += 1
-            else:
-                ambig = 0
+        counts[name] += 1
+        total_counts += 1
 
-            last_read = read
+        # Counts multimapped reads
+        if read == last_read:
+            ambig_counts += 1
+            ambig += 1
+        else:
+            ambig = 0
 
-            # Warning for extreme multimapping reads
-            if ambig > 100 and warn:
-                print('Warning: Possible alignment to constant region')
-                warn = False
+        last_read = read
+
+        # Warning for extreme multimapping reads
+        if ambig > 100 and warn:
+            print('Warning: Possible alignment to constant region')
+            warn = False
 
 print(str(total_counts) + ' total counts')
 print(str(ambig_counts) + ' ambiguous counts')
