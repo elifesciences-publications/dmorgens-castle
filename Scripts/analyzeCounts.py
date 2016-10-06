@@ -349,7 +349,7 @@ with open(file_out + '_record.txt', 'w') as rec_open:
     rec_csv.writerow(['Number of distinct elements', len(untreated)])
 
 # Saves permanent record
-with open(os.path.join('Records', 'analyzeCounts' + time.strftime("%Y%m%d%H%M%eS")), 'w') as back_open:
+with open(os.path.join('Records', 'analyzeCounts' + time.strftime("%Y%m%d%H%M%eS") + '_record.txt'), 'w') as back_open:
     rec_csv = csv.writer(back_open, delimiter='\t')
     rec_csv.writerow(['analyzeCounts.py version', current_version])
     rec_csv.writerow(['Date', time.strftime("%d:%m:%Y")])

@@ -51,6 +51,9 @@ parser.add_argument('-x', '--exclude', type=str,
 parser.add_argument('-s', '--search', type=str,
                         help='Use count files in indicated folder.')
 
+parser.add_argument('-f', '--file_type', default='png',
+                        help='File ending/type. Default is "png"')
+
 # Saves all input to object args
 args = parser.parse_args()
 
@@ -64,10 +67,10 @@ else:
     file_out = os.path.join('Results', args.name)
 
 try:
-    with open(file_out + '_dist.png', 'w') as out_open:
+    with open(file_out + '_dist.'+ args.file_type, 'w') as out_open:
         pass
 
-    os.remove(file_out + '_dist.png')
+    os.remove(file_out + '_dist.' + args.file_type)
 
 except IOError:
     sys.exit('Cannot write to output file:\n' + file_out + '\n'
@@ -184,7 +187,7 @@ plt.xlabel('Elements')
 plt.ylabel('Normalized Counts')
 plt.title('Distribution of counts')
 
-plt.savefig(file_out + '_dist.png')
+plt.savefig(file_out + '_dist.' + args.file_type)
 plt.close()
 
 

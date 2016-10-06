@@ -79,7 +79,7 @@ parser.add_argument('-g', '--gene_col', type=int, default=1,
 parser.add_argument('-o', '--record', action='store_true',
                         help='Override need for record file.')
 
-parser.add_argument('-of', '--override_file', action='store_true',
+parser.add_argument('-of', '--override_file', type=str,
                         help='Override automatic targeting to Results folder')
 
 # Saves all input to object args
@@ -90,7 +90,11 @@ args = parser.parse_args()
 # Checks arguments
 
 file_name = args.res_file.split('.')[0]
-file_out = file_name + '_volcano.' + args.file_type
+
+if not args.override_file:
+    file_out = file_name + '_volcano.' + args.file_type
+else:
+    file_out = args.override_file
 
 try:
     with open(file_out, 'w') as out_open:
@@ -273,6 +277,7 @@ if args.names:
     for name, gene in gene_labels:
         effect, rat = gene2effect_rat[gene]
 	plt.text(effect, rat, name)
+        plt.plot(effect, rat, '.', color='b', markersize=10, markeredgewidth=0)
 
 if args.thresh:
 

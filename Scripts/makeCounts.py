@@ -53,7 +53,7 @@ parser.add_argument('name', help='Name for output files',
                     type=str)
 
 parser.add_argument('screen_type', help='The screen type', type=str,
-                        choices=name2index.keys())
+                        choices=sorted(name2index.keys()))
 
 # Optional arguments:
 parser.add_argument('-m', '--mismatch', dest='mismatch',
@@ -144,7 +144,7 @@ else:
 print('Unzipping reads')
 
 try:
-    subprocess.check_call('gunzip ' + file_out + '_all.fastq.gz', shell=True)
+    subprocess.check_call('gunzip ' + file_out + '_all.fastq.gz -f', shell=True)
 except:
     sys.exit('Shell error')
 
@@ -313,13 +313,13 @@ except:
 
 print('Compressing mapped reads')
 try:
-    subprocess.check_call('gzip ' + file_out + '.map', shell=True)
+    subprocess.check_call('gzip ' + file_out + '.map -f', shell=True)
 except:
     sys.exit('Shell error')
 
 print('Compressing unmapped reads')
 try:
-    subprocess.check_call('gzip ' + file_out + '.unmapped', shell=True)
+    subprocess.check_call('gzip ' + file_out + '.unmapped -f', shell=True)
 except:
     sys.exit('Shell error')
 

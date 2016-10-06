@@ -30,11 +30,14 @@ parser.add_argument('-s','--strim', help='Trim bases from start; default is 0',
 parser.add_argument('-e', '--etrim', help='Trim bases from end; default is 0',
                         default=0, type=int)
 
+parser.add_argument('-n', '--nums', help='Number of oligos to output',
+                        default=2, type=int)
+
 parser.add_argument('-o', '--override', help='Flag to override existing indexes',
                         action='store_true')
 
 parser.add_argument('-t', '--test', help="Flag to not run bowtie",
-                        action='store_true')
+                        action='store_false')
 
 args = parser.parse_args()
 
@@ -85,10 +88,17 @@ with open(args.oligo_file, 'r') as oligo_file:
             oligo_list.append(['>' + line[0], oligo])
 
 if args.test:
-    print('Sample oligo: ' + oligo_list[0][1])
-    print('Sample oligo: ' + oligo)
-    print('Sample length: ' + str(len(oligo)))
-    sys.exit('Warning: Files not created')
+
+    for t in range(args.nums):
+        oligo = oligo_list[t][1]
+        print('Sample oligo: ' + oligo)
+
+    for t in range(args.nums):
+        oligo = oligo_list[t][1]
+        print('Sample length: ' + str(len(oligo)))
+
+    sys.exit('Warning: Files not created.\n' +
+                'Use -t or --test to create files')
 
 
 ##############################################################################

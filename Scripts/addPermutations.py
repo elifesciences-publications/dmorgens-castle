@@ -150,6 +150,7 @@ with open(args.res_file, 'w') as out_open:
         # Writes to file
         out_csv.writerow(line)
 
+
 ###############################################################################
 # Appends note to existing record
 

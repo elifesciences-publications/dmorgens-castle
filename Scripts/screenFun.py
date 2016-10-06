@@ -198,7 +198,7 @@ def timeZero(zero_files, thresh):
         zero_unt_file, zero_trt_file = zero_files
 
     # Reads and filters in time zero untreated file
-    with open(zero_unt_file, 'r') as zero_unt_open:
+    with open(zero_unt_file, 'rU') as zero_unt_open:
 
         dialect = csv.Sniffer().sniff(zero_unt_open.read(1024), delimiters='\t ,')
         zero_unt_csv = csv.reader(zero_unt_open, dialect)
@@ -213,7 +213,7 @@ def timeZero(zero_files, thresh):
                 zero_unt[line[0]] = thresh
 
     # Reads and filters in time zero treated file
-    with open(zero_trt_file, 'r') as zero_trt_open:
+    with open(zero_trt_file, 'rU') as zero_trt_open:
 
         dialect = csv.Sniffer().sniff(zero_trt_open.read(1024), delimiters='\t ,')
         zero_trt_csv = csv.reader(zero_trt_open, dialect)
@@ -248,7 +248,7 @@ def filterCounts(unt_file, trt_file, thresh, zero_files, exclude=False):
     untreated_raw = {}
     treated_raw = {}
 
-    with open(unt_file, 'r') as unt_open:
+    with open(unt_file, 'rU') as unt_open:
 
         dialect = csv.Sniffer().sniff(unt_open.read(1024), delimiters='\t ,')
         unt_open.seek(0)
@@ -273,7 +273,7 @@ def filterCounts(unt_file, trt_file, thresh, zero_files, exclude=False):
                         break
 
     # Stores treated counts as dictionary of name to count
-    with open(trt_file, 'r') as trt_open:
+    with open(trt_file, 'rU') as trt_open:
 
         dialect = csv.Sniffer().sniff(trt_open.read(1024), delimiters='\t ,')
         trt_open.seek(0)
@@ -1242,8 +1242,8 @@ def calculatePval(res_file, permI, permL, erase, ratio_col):
         res_csv = csv.reader(res_open, delimiter=',', lineterminator = '\n')
         header = res_csv.next()
         for line in res_csv:
-            gene2line[line[1]] = line
-            gene2rat[line[1]] = float(line[ratio_col])
+            gene2line[line[0] + line[1]] = line
+            gene2rat[line[0] + line[1]] = float(line[ratio_col])
 
     geneP = rankLikelihoods(perm_rats, gene2rat)
 

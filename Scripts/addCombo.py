@@ -79,6 +79,10 @@ except IOError:
     sys.exit('Record of result file not found\n'
                 + 'Change file name or rerun analysis')
 
+except StopIteration:
+    sys.exit('Empty record file found\n'
+                + 'Rerun analysis')
+
 stats1, files1, info1, param1 = retrieveRecord(res_file1, current_version)
 stats2, files2, info2, param2 = retrieveRecord(res_file2, current_version)
 

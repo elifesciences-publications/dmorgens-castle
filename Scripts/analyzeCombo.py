@@ -257,7 +257,7 @@ with open(file_out + '_record.txt', 'w') as rec_open:
     rec_csv.writerow(['Number of processers', args.nums])
     
 # Saves permanent record
-with open(os.path.join('Records', 'analyzeCombo' + time.strftime("%Y%m%d%H%M%eS")), 'w') as back_open:
+with open(os.path.join('Records', 'analyzeCombo' + time.strftime("%Y%m%d%H%M%eS")) + '_record.txt', 'w') as back_open:
     rec_csv = csv.writer(back_open, delimiter='\t')
     rec_csv.writerow(['analyzeCombo.py', current_version])
     rec_csv.writerow(['Date', time.strftime("%d:%m:%Y")])
