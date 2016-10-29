@@ -256,8 +256,8 @@ gene_span = {}
 for gene, rhos in gene_rhos.items():
 
     # Maximum and minimum effect checked is twice the max and min of elements
-    max_I = int(2 * max(rhos + [0]))
-    min_I = int(2 * min(rhos + [0]))
+    max_I = int(2 * max(rhos + [-1, 0, 1]))
+    min_I = int(2 * min(rhos + [-1, 0, 1]))
 
     gene_span[gene] = (min_I, max_I)
 

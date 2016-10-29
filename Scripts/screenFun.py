@@ -466,7 +466,7 @@ def enrich_all(untreated, treated, neg_name, split_mark, K, time_zero, back):
                                     zero_unt[entry], total_zero_unt,
                                     shift, K)
 
-    # Gathers rho values for each gene and seperates out negative controls
+    # Gatheros rho values for each gene and seperates out negative controls
     gene_rhos = defaultdict(list)
     gene_rhos_int = defaultdict(list)
     gene_ref = defaultdict(list)
@@ -852,8 +852,8 @@ def retrievePerm(draw_num, perm_num, back_rhos, tar_rhos, nums, scale, I_step):
 
     for gene, rhos in perm_rhos.items():
 
-        max_I = int(1.2 * max(rhos + [0]))
-        min_I = int(1.2 * min(rhos + [0]))
+        max_I = int(1.2 * max(rhos + [-1, 0, 1]))
+        min_I = int(1.2 * min(rhos + [-1, 0, 1]))
 
         gene_span[gene] = (min_I, max_I)
 
@@ -1009,8 +1009,8 @@ def comboSpan(gene_rhos1, gene_rhos2, span):
             rhos2 = []
 
         # Initiates grid
-        max_I = int(span * max(rhos1 + rhos2 + [0]))
-        min_I = int(span * min(rhos1 + rhos2 + [0]))
+        max_I = int(span * max(rhos1 + rhos2 + [-1, 0, 1]))
+        min_I = int(span * min(rhos1 + rhos2 + [-1, 0, 1]))
 
         # Saves grid by unified ID
         gene_span[unified] = (min_I, max_I)
@@ -1039,8 +1039,8 @@ def comboSpan(gene_rhos1, gene_rhos2, span):
             rhos1 = []
 
         # Initiates grid
-        max_I = int(span * max(rhos1 + rhos2 + [0]))
-        min_I = int(span * min(rhos1 + rhos2 + [0]))
+        max_I = int(span * max(rhos1 + rhos2 + [-1, 0, 1]))
+        min_I = int(span * min(rhos1 + rhos2 + [-1, 0, 1]))
 
         # Saves grid by unified ID
         gene_span[geneID] = (min_I, max_I)

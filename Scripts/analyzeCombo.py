@@ -47,6 +47,8 @@ parser.add_argument('-of', '--override_file', action='store_true',
 
 parser.add_argument('-m', '--mouse', action='store_true')
 
+parser.add_argument('-s', '--span', type=int, default=2)
+
 # Saves all input to object args
 args = parser.parse_args()
 
@@ -170,7 +172,7 @@ I_step = min([I_step1, I_step2])
 scale = max([scale1, scale2])
 
 # Auxiliary function determines single grid and unifies gene IDs
-add_gene_rhos1, add_gene_rhos2, gene_span = comboSpan(gene_rhos1, gene_rhos2, 2)
+add_gene_rhos1, add_gene_rhos2, gene_span = comboSpan(gene_rhos1, gene_rhos2, args.span)
 
 
 ###############################################################################
