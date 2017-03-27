@@ -1,2 +1,4 @@
 Cas9-4	Indices/CRKO_4sg_26b
 shRNA	Indices/allhumanshRNA
+Cas9-10	Indices/DM_Cas10_20150427
+mm-Cas9-10	Indices/mouse_cas9_10_01232016
