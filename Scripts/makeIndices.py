@@ -39,6 +39,10 @@ parser.add_argument('-o', '--override', help='Flag to override existing indexes'
 parser.add_argument('-t', '--test', help="Flag to not run bowtie",
                         action='store_false')
 
+parser.add_argument('-b', '--bowtie',
+                    help='Location of Bowtie aligner; default is /usr/bin/bowtie-build', type=str,
+                    default='/usr/bin/bowtie-build')
+
 args = parser.parse_args()
 
 
@@ -49,7 +53,7 @@ index_file = os.path.join('Indices', 'screen_type_index.txt')
 index = []
 
 # Check whether screen type and name already exist
-with open(index_file, 'r') as index_open:
+with open(index_file, 'rU') as index_open:
 
     index_csv = csv.reader(index_open, delimiter='\t')
 
@@ -118,7 +122,7 @@ with open(fasta_location, 'w') as fasta_open:
 # Call bowtie-build to build new index
 
 try:
-    subprocess.check_call('bowtie-build ' + fasta_location + ' ' + 
+    subprocess.check_call(args.bowtie + ' ' + fasta_location + ' ' + 
                                             os.path.join('Indices', args.full_name),
                                                                     shell=True)
 except:
